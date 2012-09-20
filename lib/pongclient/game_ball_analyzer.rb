@@ -16,12 +16,12 @@ class GameBallAnalyzer
 
         # When we know it, it will be a boolean.
         # Up is defined as human up, where y=0
-        @ball_will_come_from_up = 0
+        @ball_will_come_from_up = false
     end
 
     def clear_coordinates
         @coordinates.clear
-        @ball_will_come_from_up = 0
+        @ball_will_come_from_up = false
     end
 
     def ball_will_come_from_up
@@ -68,11 +68,11 @@ class GameBallAnalyzer
                 y_start = sideline_coords.y
                 dy *= -1.0
                 sideline_hits += 1
+                @ball_will_come_from_up = y_start < 100
             end
         end while sideline_coords != false
 
         @future_sideline_hits = sideline_hits
-        @ball_will_come_from_up = y_start < 10
         
         hit_coords = calculate_our_goalline_pass(x_start, y_start, dx, dy, print)
         return hit_coords
