@@ -74,6 +74,12 @@ class GameBallAnalyzer
 
         @future_sideline_hits = sideline_hits
         
+        # If there's no sideline hits, the current direction determines if it'll
+        # come from up
+        if sideline_hits == 0
+            @ball_will_come_from_up = get_dy > 0
+        end
+        
         hit_coords = calculate_our_goalline_pass(x_start, y_start, dx, dy, print)
         return hit_coords
     end
