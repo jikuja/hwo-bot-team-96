@@ -302,7 +302,7 @@ class AI
             if target_dxdy.abs > current_dxdy
                 # We want to increase dxdy.
                 # Move paddle up, hit with inner side.
-                puts "bounce - down, down"
+                puts "bounce - down, up"
                 return (-1)*calculate_offset(needed_change_of_dxdy, current_dxdy, true)
             else
                 # We want to decrease dxdy.
@@ -315,7 +315,7 @@ class AI
             # We want to bounce the ball to the same direction where it comes from
             # (this is very, very, very difficult or impossilbe)
             
-            puts "error - unrealistic bouncing asked. we should not try this"
+            puts "error - unrealistic bouncing asked. we should not try this."
             return 0.0 # Just make a random hit
         end
     end
