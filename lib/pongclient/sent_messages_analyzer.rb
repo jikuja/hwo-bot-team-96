@@ -33,14 +33,15 @@ class SentMessagesAnalyzer
         return @sent_messages.count{ |x| (Time.now-x.timestamp).abs < ms }
     end
 
-    def clear_messages
-        @sent_messages.clear
+    def clear_speed
+        @sent_messages[-1].speed = 0.0
     end
 end
 
 # Stores data for a message that is sent to the game server
 class Message
-    attr_reader :speed, :timestamp
+    attr_reader :timestamp
+    attr_accessor :speed
 
     def initialize(speed)
         @speed = speed

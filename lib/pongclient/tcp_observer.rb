@@ -47,7 +47,7 @@ class TCPObserver
                 when 'gameIsOver'
                     #clear GameBallAnalyzer state as soon as possible
                     @ball_analyzer.clear_coordinates
-                    @sma.clear_messages
+                    @sma.clear_speed
                     puts "Game over... #{message['data']} won!"
                 end
         end
