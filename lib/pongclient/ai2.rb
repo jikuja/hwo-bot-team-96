@@ -104,11 +104,11 @@ class AI
             target_dxdy = calculate_wanted_dxdy(pass_coordinates)
 
             # How many pixels from the center we want the ball to hit
-            paddle_offset = get_offset_to_get_wanted_dxdy(target_dxdy, @ball_analyzer.get_dxdy )
+            paddle_offset = get_offset(target_dxdy, @ball_analyzer.get_dxdy )
 
             # Reduce the offset because we don't want to take a too big risk
             puts "using offset #{paddle_offset} before limiting"
-            paddle_offset = adjust_offset_depending_on_uncertainty(paddle_offset)
+            #paddle_offset = adjust_offset_depending_on_uncertainty(paddle_offset)
             paddle_offset = limit_offset(paddle_offset)
             puts "using offset #{paddle_offset} after limiting"
 
@@ -142,9 +142,9 @@ class AI
             # TODO -- calculate the sideline coordinates that would bounce the ball
             # into the direction of the other corner of their goal-line.
             if @ball_analyzer.ball_will_come_from_up
-                aim_coordinates = XYCoordinates.new(50.0, @pitch.top_sideline)
-            else
                 aim_coordinates = XYCoordinates.new(50.0, @pitch.bottom_sideline)
+            else
+                aim_coordinates = XYCoordinates.new(50.0, @pitch.top_sideline)
             end
         end
 
@@ -276,25 +276,51 @@ class AI
     end
 
     # Private
+    def get_offset(target_dxdy, current_dxdy)
+        # TODO change into one if-clause
+        
+        needed_change_of_dxdy = get_needed_dxdy_change(target_dxdy, current_dxdy)
+        
+        if target_dxdy > 0 && current_dxdy < 0
+            # Ball comes from up, will move down (after bounce)
+
+            if target_dxdy > current_dxdy.abs
+                # We want to increase dxdy.
+                # Move paddle up, hit with outer side.
+                return (-1)*calculate_offset(needed_change_of_dxdy, current_dxdy, true)
+            else
+                # We want to decrease dxdy.
+                # Move paddle down, hit with inner side.
+                return calculate_offset(needed_change_of_dxdy, current_dxdy, false)
+            end
+            
+        elsif target_dxdy < 0 && current_dxdy > 0
+            # Ball comes from below, will move up (after bounce)
+
+            if target_dxdy.abs > current_dxdy
+                # We want to increase dxdy.
+                # Move paddle down, hit with outer side.
+                return calculate_offset(needed_change_of_dxdy, current_dxdy, true)
+            else
+                # We want to decrease dxdy.
+                # Move paddle up, hit with inner side.
+                return (-1)*calculate_offset(needed_change_of_dxdy, current_dxdy, false)
+            end
+        else
+            # TODO what to do when this happens?
+            # We want to bounce the ball to the same direction where it comes from
+            # (this is very, very, very difficult or impossilbe)
+            
+            puts "error - unrealistic bouncing asked. we should not try this"
+            return 20.0 # Just make a random attack
+        end
+    end
+
+    # Private
     # TODO this is legacy method, should be deleted
     # Calculates the dxdy from the pass coordinate to where we are aiming the ball
     def calculate_wanted_dxdy(from_coordinates)
         return calculate_dxdy(from_coordinates, @where_to_aim_coordinates)
-    end
-
-    # Private
-    # Calculates the distance from the paddle's center, where the ball should
-    # hit so that it would bounce off with a certain dx/dy-ratio
-    def get_offset_to_get_wanted_dxdy(wanted_dxdy, current_dxdy)
-    
-        #printf("bouncer %s, target %6.2f, current %6.2f, change %6.2f, offset %6.2f \n", @ball_analyzer.ball_will_come_from_up, target_dxdy, current_dxdy, needed_change_of_dxdy, temp_offset )
-
-        needed_change_of_dxdy = get_needed_dxdy_change(wanted_dxdy, current_dxdy) 
-        absolute_offset = get_offset_to_get_certain_dxdy_change(needed_change_of_dxdy, current_dxdy)
-
-        final_offset = mirror_offset_for_increasing_or_decreasing_angle(absolute_offset, wanted_dxdy, current_dxdy)
-        
-        return final_offset
     end
 
     # Private
@@ -305,34 +331,32 @@ class AI
         if (wanted_dxdy < 0 && current_dxdy > 0) || (wanted_dxdy > 0 && current_dxdy < 0)
         # TODO Filter some impossible cases
             # If the certain bounce seems possible to do
-            return wanted_dxdy.abs - current_dxdy.abs
+            return (wanted_dxdy.abs - current_dxdy.abs).abs
         else
+            # TODO
             # We can't do a hit like what was asked. Just hit it.
             puts "error - asked to bounce the ball back"
             return 5.0
         end
     end
 
-    def get_offset_to_get_certain_dxdy_change(needed_change_of_dxdy, current_dxdy)
-        max_change = 6.0 # TODO datamine
+    def calculate_offset(needed_change_of_dxdy, current_dxdy, increase_dxdy)
 
         current_dxdy = current_dxdy.abs
         
-        if needed_change_of_dxdy > 0
-            # We want to increment angle. We hit the ball with outer side
-            a = -0.0190501
-            b = 2.0088
+        if increase_dxdy
+            # We want to decrement the dxdy. We hit the ball with outer side
+            a = 0.05
+            b = 2.0
         else
-            # We want to decrement angle. We hit the ball with inner side
-            a = 0.0496686
-            b = 2.00503
+            # We want to increment the dxdy. We hit the ball with inner side
+            a = 0.02
+            b = 2.0
         end
-        
-        needed_change_of_dxdy = needed_change_of_dxdy.abs
 
-        if needed_change_of_dxdy > max_change
-            needed_change_of_dxdy = max_change
-        end
+        #if needed_change_of_dxdy > max_change
+        #    needed_change_of_dxdy = max_change
+        #end
         # TODO CHECK -- makes the magic, vol 2
         temp_offset = needed_change_of_dxdy / (a * current_dxdy) - b / a
         
@@ -340,50 +364,6 @@ class AI
             
     end
 
-    # Private
-    # temp_offset is an absolute value of an offset that will give us the target dxdy.
-    # This function will mirror the offset (change its sign by multiplying with -1.0)
-    # so it will serve the purpose of increasing or decreasing the angle.
-    def mirror_offset_for_increasing_or_decreasing_angle(temp_offset, target_dxdy, current_dxdy)
-        # TODO change into one if-clause
-        if target_dxdy > 0 && current_dxdy < 0
-            # Ball comes from up, will move down (after bounce)
-
-            if target_dxdy > current_dxdy.abs            
-                # We want to increase angle
-                temp_offset = temp_offset
-            else
-                # We want to decrease the angle
-                temp_offset *= -1
-            end
-            
-        elsif target_dxdy < 0 && current_dxdy > 0
-            # Ball comes from below, will move up (after bounce)
-
-            if target_dxdy.abs < current_dxdy
-                # We want to increase the angle
-                temp_offset = temp_offset
-            else
-                # We want to decrease the angle
-                temp_offset *= -1
-            end
-        else
-            # We want to bounce the ball to the same direction where it comes from
-            # (this is very, very, very difficult or impossilbe)
-            
-            puts "error - unrealistic bouncing asked. we should not try this"
-            
-            # Ball should move up
-            #if target_dxdy < 0
-            #    temp_offset = temp_offset
-            #else
-            #    temp_offset *= (-1)
-            #end
-            temp_offset = 20.0 # Just make a random attack
-        end
-    
-        return temp_offset
-    end
 
     # Private
     # Return the distance between paddle's center and the target coordinates
