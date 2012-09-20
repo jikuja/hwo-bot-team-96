@@ -124,14 +124,13 @@ class AI
         # It's not clever to aim at the pixels most near the sidelines,
         # because if we mistakenly hit a sideline, it gives the opponent
         # more time to reach the pass line
-        distance_from_sideline = 40.0
+        distance_from_sideline = 80.0
         
-        # TODO This makes the AI too predictable, but is it really a problem?
-        # Shoots the ball into the corner that is easier to aim (do not try to
-        # bounce the ball back to the direction where it comes from)
         if target_coordinates_can_be_hit_with_both_sides_of_paddle
-            # Aim to the side where the opponent is not
-            if @their_paddle.get_y < @pitch.get_center_y
+            # TODO This makes the AI too predictable, but is it really a problem?
+            # Shoots the ball into the corner that is easier to aim (do not try to
+            # bounce the ball back to the direction where it comes from)
+            if @ball_analyzer.ball_will_come_from_up
                 # Opponent up, aim down
                 @where_to_aim_coordinates.y = @pitch.bottom_sideline - distance_from_sideline
             else
