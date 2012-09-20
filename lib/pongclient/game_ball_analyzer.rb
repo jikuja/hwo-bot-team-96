@@ -68,7 +68,7 @@ class GameBallAnalyzer
                 y_start = sideline_coords.y
                 dy *= -1.0
                 sideline_hits += 1
-                @ball_will_come_from_up = y_start < 100
+                @ball_will_come_from_up = y_start < @pitch.get_center_y
             end
         end while sideline_coords != false
 

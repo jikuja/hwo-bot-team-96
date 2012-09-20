@@ -4,13 +4,13 @@ class AI
 
     # How much (in amounts of ball radius) should the inner hitting point be
     # inside the paddle
-    INNER_SAFE_FACTOR = -0.4
+    INNER_SAFE_FACTOR = -0.7
     
     # How much (in amounts of ball radius) should the outer hitting point be
     # inside the paddle.
     # In correct physics, the inner and outer should be the same.
     # Treats the symptom, not the disease (because we don't know what it is).
-    OUTER_SAFE_FACTOR = 1.2 # 1.5 This is the optimal value, DON'T CHANGE
+    OUTER_SAFE_FACTOR = 0.7
 
     # How close (in amounts of ball radius) to the sideline we allow our paddle to go.
     # With laggy connections the paddle might collide and bounce off
