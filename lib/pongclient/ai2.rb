@@ -288,12 +288,12 @@ class AI
                 # We want to increase dxdy.
                 # Move paddle down, hit with inner side.
                 puts "bounce - up, down"                
-                return (-1)*calculate_offset(needed_change_of_dxdy, current_dxdy, true)
+                return calculate_offset(needed_change_of_dxdy, current_dxdy, true)
             else
                 # We want to decrease dxdy.
                 # Move paddle up, hit with outer side.
                 puts "bounce - up, up"
-                return calculate_offset(needed_change_of_dxdy, current_dxdy, false)
+                return (-1)*calculate_offset(needed_change_of_dxdy, current_dxdy, false)
             end
             
         elsif target_dxdy < 0 && current_dxdy > 0
