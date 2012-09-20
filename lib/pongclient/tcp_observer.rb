@@ -9,6 +9,7 @@ class TCPObserver
         @our_paddle_analyzer = client.our_paddle_analyzer
         @their_paddle_analyzer = client.their_paddle_analyzer
         @pitch = client.pitch
+        @sma = client.sma
     end
 
     # Here we read our socket, parse JSON-messages
@@ -46,6 +47,7 @@ class TCPObserver
                 when 'gameIsOver'
                     #clear GameBallAnalyzer state as soon as possible
                     @ball_analyzer.clear_coordinates
+                    @sma.clear_messages
                     puts "Game over... #{message['data']} won!"
                 end
         end

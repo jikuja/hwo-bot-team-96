@@ -32,6 +32,10 @@ class SentMessagesAnalyzer
     def count_messages(ms)
         return @sent_messages.count{ |x| (Time.now-x.timestamp).abs < ms }
     end
+
+    def clear_messages
+        @sent_messages.clear
+    end
 end
 
 # Stores data for a message that is sent to the game server
