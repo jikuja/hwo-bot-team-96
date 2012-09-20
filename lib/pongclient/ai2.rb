@@ -46,7 +46,7 @@ class AI
         
         # How close (pixels) to the sideline we want to aim our hits.
         # Rather hit too near the center than hit a sideline.
-        @aim_distance_from_sideline = 10.0
+        @aim_distance_from_sideline = 50.0
 
     end
 
