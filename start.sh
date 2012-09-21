@@ -30,7 +30,7 @@ function start_client() {
   logfile=log/client.log
   mkdir log 2>/dev/null
   #logfile=/dev/null
-  (ruby borg.rb $playername $host $port &>$logfile) & echo $! > $pidfile
+  (ruby borg.rb $playername $host $port &>>$logfile) & echo $! > $pidfile
   echo "Logging into $logfile"
 }
 
