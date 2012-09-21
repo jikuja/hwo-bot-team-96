@@ -84,6 +84,9 @@ class AI
 
         # Set the target to the center, if the ball is going the other way
         if ! @ball_analyzer.is_going_towards_our_goalline
+            # TODO reading the game?
+            # Edge cases: is it possible for the opponent to aim up/down.
+            # Timing?
             set_target_coordinates_to_center
             return
         end
@@ -118,18 +121,22 @@ class AI
     # Update the where to aim coordinates
     def update_where_to_aim_coordinates
         
-        if target_coordinates_can_be_hit_with_both_sides_of_paddle
-            # TODO This makes the AI too predictable, but is it really a problem?
-            # Shoots the ball into the corner that is easier to aim (do not try to
-            # bounce the ball back to the direction where it comes from)
+        # DO NOT try to bounce the ball back to the direction where it comes from)
+
+        # TODO if ball_y close to edges and get_dy.abs is small, you can shoot the ball back
+
+        if pass_coordinates_can_be_hit_with_both_sides_of_paddle
+            # Shoots the ball into the corner that is easier to aim
             if @ball_analyzer.ball_will_come_from_up
-                # Opponent up, aim down
+                # Aim down
                 puts "aim bottom"
-                @where_to_aim_coordinates.y = @pitch.bottom_sideline - @aim_distance_from_sideline
+                aim_x = @pitch.get_their_goalline
+                aim_y = @pitch.bottom_sideline - @aim_distance_from_sideline
             else
-                # Opponent down, aim up
+                # Aim up
                 puts "aim up"
-                @where_to_aim_coordinates.y = @pitch.top_sideline + @aim_distance_from_sideline
+                aim_x = @pitch.get_their_goalline
+                aim_y = @pitch.top_sideline - @aim_distance_from_sideline
             end
         else
             # Can't hit it freely. Plan B: Let's hit a sideline instead.
@@ -137,24 +144,35 @@ class AI
                 if @pass_y < @pitch.get_center_y
                     # The ball bounces just from the sideline before hitting
                     # our paddle. We can't really aim in these situations.
-                    aim_coordinates = XYCoordinates.new( @pitch.get_their_goalline, @pitch.get_center_y )
+                    puts "aim center from top"
+                    aim_x = @pitch.get_their_goalline
+                    aim_y = @pitch.get_center_y
                 else
                     # Hit the ball to the sideline
                     # TODO -- calculate the sideline coordinates
-                    aim_coordinates = XYCoordinates.new(50.0, @pitch.bottom_sideline)
+                    puts "aim bottom sideline from top"
+    
+                    aim_x = 200.0
+                    aim_y = @pitch.bottom_sideline
                 end
             else
                 if @pass_y > @pitch.get_center_y
                     # The ball bounces just from the sideline before hitting
                     # our paddle. We can't really aim in these situations.
-                    aim_coordinates = XYCoordinates.new( @pitch.get_their_goalline, @pitch.get_center_y )
+                    puts "aim center from bottom"
+                    aim_x = @pitch.get_their_goalline
+                    aim_y = @pitch.get_center_y
                 else
                     # TODO -- calculate the sideline coordinates
                     # Hit the ball to the sideline
-                    aim_coordinates = XYCoordinates.new(50.0, @pitch.top_sideline)
+                    puts "aim top sideline from bottom"
+                    aim_x = 200.0
+                    aim_y = @pitch.top_sideline
                 end
 
             end
+            
+            @where_to_aim_coordinates = XYCoordinates.new( aim_x, aim_y )
         end
 
         # for debug
@@ -315,7 +333,7 @@ class AI
             # We want to bounce the ball to the same direction where it comes from
             # (this is very, very, very difficult or impossilbe)
             
-            puts "error - unrealistic bouncing asked. we should not try this."
+            puts "error - unrealistic bouncing asked"
             return 0.0 # Just make a random hit
         end
     end
@@ -325,9 +343,8 @@ class AI
     # This is deviation to the physical perpendicular surface hit.
     def get_needed_dxdy_change(wanted_dxdy, current_dxdy)
 
+        # In normal bounce the before and after dxdy are of different sign
         if (wanted_dxdy < 0 && current_dxdy > 0) || (wanted_dxdy > 0 && current_dxdy < 0)
-        # TODO Filter some impossible cases
-            # If the certain bounce seems possible to do
             return (wanted_dxdy.abs - current_dxdy.abs).abs
         else
             # TODO
@@ -401,14 +418,15 @@ class AI
 
     # Is it possible to hit the the ball with both sides of the paddle,
     # or is the coordinate too close to a sideline? 
-    def target_coordinates_can_be_hit_with_both_sides_of_paddle
-        if @target_y < @pitch.paddle_height - get_outer_safe_zone
-            puts "cannot be hit with both sides"
+    def pass_coordinates_can_be_hit_with_both_sides_of_paddle
+        if @pass_y < @pitch.paddle_height - get_outer_safe_zone
+            puts "not hitable with both sides up"
             return false
-        elsif @target_y > @pitch.bottom_sideline - @pitch.paddle_height + get_outer_safe_zone
-            puts "cannot be hit with both sides"
+        elsif @pass_y > @pitch.bottom_sideline - @pitch.paddle_height + get_outer_safe_zone
+            puts "not hitable with both sides down"
             return false
         else
+            puts "hitable"
             return true
         end
     end    
