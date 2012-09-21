@@ -3,7 +3,6 @@ class GameBallAnalyzer
     SIDELINE_HIT_OFFSET = 1.0
 
     def initialize(client)
-        client = client
         @pitch = client.pitch
 
         # Contains the current ball coordinates

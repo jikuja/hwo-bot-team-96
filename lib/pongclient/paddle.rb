@@ -4,7 +4,6 @@ class Paddle
     # The incoming coordinate is from top left corner.
     # The saved y-coordinate is CENTERED TO THE PADDLE
     def initialize(client)
-        client = client
         @pitch = client.pitch
         @coordinates = Array.new
         @ready = false

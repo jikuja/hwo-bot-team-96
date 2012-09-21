@@ -21,7 +21,6 @@ class AI
     # Public
     # Constructor
     def initialize(client)
-        client = client
         @tcp = client.tcp
         @ball_analyzer = client.ball_analyzer
         @our_paddle = client.our_paddle_analyzer
