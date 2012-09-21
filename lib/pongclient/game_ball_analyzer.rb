@@ -108,17 +108,6 @@ class GameBallAnalyzer
     end
 
     # Public
-    def give_pass_coordinates2
-        if @coordinates.length < 2 || ! is_going_towards_our_goalline
-            return
-        end
-        foo = calculate_sideline_hit(get_x, get_y, -1.0*get_dx, -1.0*get_dy, false)
-        if foo
-            puts "Reversed Sideline hit was at (#{foo.x}, #{foo.y})"
-        end
-    end
-
-    # Public
     def is_enough_coordinates
         return @coordinates.length >= 2
     end
