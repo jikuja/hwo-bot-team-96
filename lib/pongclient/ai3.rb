@@ -4,13 +4,13 @@ class AI
 
     # How much (in amounts of ball radius) should the inner hitting point be
     # inside the paddle
-    INNER_SAFE_FACTOR = -0.6
+    INNER_SAFE_FACTOR = -0.4
     
     # How much (in amounts of ball radius) should the outer hitting point be
     # inside the paddle.
     # In correct physics, the inner and outer should be the same.
     # Treats the symptom, not the disease (because we don't know what it is).
-    OUTER_SAFE_FACTOR = 0.8
+    OUTER_SAFE_FACTOR = 1.1
 
     # How close (in amounts of ball radius) to the sideline we allow our paddle to go.
     # With laggy connections the paddle might collide and bounce off
@@ -90,7 +90,7 @@ class AI
         # If the ball is going the other way
         # we try to optimize the paddle location
         if ! @ball_analyzer.is_going_towards_our_goalline
-            if ! @their_paddle.is_moving && @ball_analyzer.is_enough_data
+            if @ball_analyzer.is_enough_data
                 # Calculate where to opponent is aiming to hit the ball,
                 # move paddle there.
                 @guess_mode = true
@@ -201,18 +201,21 @@ class AI
     # Set our paddle target coordinates to where the opponent supposedly will hit
     # TODO Code quality awful, but probably not time to refactor it.
     def set_target_coordinates_to_opponent_hit_zone
-        
-        # Where the opponent is located
-        opponent_paddle_y = @their_paddle.get_y
-
-        puts "testi paddle_y #{opponent_paddle_y}"
-                
+                        
         # Where the ball will most likely pass opponent goal-line
         their_goalline_pass_coordinates = @ball_analyzer.give_pass_coordinates(false)
         puts "testi their pass #{their_goalline_pass_coordinates.y}"
         
-        # Opponent offset from the calculated pass coordinates
-        opponent_offset = their_goalline_pass_coordinates.y - opponent_paddle_y
+        if ! @their_paddle.is_moving
+            # Where the opponent is located
+            opponent_paddle_y = @their_paddle.get_y
+            # Opponent offset from the calculated pass coordinates
+            opponent_offset = their_goalline_pass_coordinates.y - opponent_paddle_y
+        else
+            opponent_offset = 0.0
+        end
+        
+        
         puts "testi offset #{opponent_offset}"
 
         if their_goalline_pass_coordinates.comes_from_up && opponent_offset > 0
