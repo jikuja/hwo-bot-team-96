@@ -81,20 +81,28 @@ class GameBallAnalyzer
             end
         end while sideline_coords != false
 
+        temp_future_sideline_hits = sideline_hits
+    
+        # If there's no sideline hits,
+        # the current direction determines if it'll come from up
+        if sideline_hits == 0
+            temp_ball_will_come_from_up = get_dy > 0
+        else
+            temp_ball_will_come_from_up = comes_from_up
+        end
+
         if to_our_goal
-            @future_sideline_hits = sideline_hits
-        
-            # If there's no sideline hits,
-            # the current direction determines if it'll come from up
-            if sideline_hits == 0
-                @ball_will_come_from_up = get_dy > 0
-            else
-                @ball_will_come_from_up = comes_from_up
-            end
+            @future_sideline_line = temp_future_sideline_hits
+            @ball_will_come_from_up = temp_ball_will_come_from_up
         end
         
         hit_coords = calculate_goalline_pass(x_start, y_start, dx, dy, to_our_goal, print)
         puts "testi actual hit_coords #{hit_coords.x} #{hit_coords.y}"
+        
+        if ! to_our_goal
+            return XYDCoordinates.new(hit_coords.x, hit_coords.y, temp_ball_will_come_from_up)
+        end
+        
         return hit_coords
     end
 
@@ -121,6 +129,7 @@ class GameBallAnalyzer
         end while sideline_coords != false
         
         hit_coords = calculate_goalline_pass(x_start, y_start, dx, dy, to_our_goal, false)
+        
         puts "testi simulated hit_coords #{hit_coords.x} #{hit_coords.y}"
         return hit_coords
     end

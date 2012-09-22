@@ -4,13 +4,13 @@ class AI
 
     # How much (in amounts of ball radius) should the inner hitting point be
     # inside the paddle
-    INNER_SAFE_FACTOR = -0.7
+    INNER_SAFE_FACTOR = -0.6
     
     # How much (in amounts of ball radius) should the outer hitting point be
     # inside the paddle.
     # In correct physics, the inner and outer should be the same.
     # Treats the symptom, not the disease (because we don't know what it is).
-    OUTER_SAFE_FACTOR = 0.7
+    OUTER_SAFE_FACTOR = 0.8
 
     # How close (in amounts of ball radius) to the sideline we allow our paddle to go.
     # With laggy connections the paddle might collide and bounce off
@@ -91,8 +91,8 @@ class AI
             if ! @their_paddle.is_moving && @ball_analyzer.is_enough_data
                 # Calculate where to opponent is aiming to hit the ball,
                 # move paddle there.
-                #set_target_coordinates_to_opponent_hit_zone
-                set_target_coordinates_to_center
+                set_target_coordinates_to_opponent_hit_zone
+                #set_target_coordinates_to_center
                 return
             else
                 # Normal defense mode.
@@ -210,11 +210,27 @@ class AI
         opponent_offset = their_goalline_pass_coordinates.y - opponent_paddle_y
         puts "testi offset #{opponent_offset}"
 
-        hit_with_inner = true
-        current_dxdy = 1.0
+        if their_goalline_pass_coordinates.comes_from_up && opponent_offset > 0
+            hit_with_inner = true
+        elsif ! their_goalline_pass_coordinates.comes_from_up && opponent_offset < 0
+            hit_with_inner = true
+        else
+            hit_with_inner = false
+        end
+
+        current_dxdy = @ball_analyzer.get_dxdy
         
         # Calculate bounced dxdy based on the offset
-        bounced_dxdy = calculate_bounced_dxdy(opponent_offset, current_dxdy, hit_with_inner)
+        change_in_dxdy = calculate_change_in_dxdy(opponent_offset, current_dxdy, hit_with_inner)
+        change_in_dxdy = change_in_dxdy.abs
+        
+        if hit_with_inner       
+            change_in_dxdy *= -1
+        end
+        
+        bounced_dxdy = current_dxdy.abs + change_in_dxdy
+        bounced_dxdy = bounced_dxdy.abs
+        
         puts "testi bounced #{bounced_dxdy}"
         
         x_start = their_goalline_pass_coordinates.x
@@ -224,6 +240,10 @@ class AI
         # divide bounced_dxdy into components with a dummy way 
         dx = (-1)*@ball_analyzer.get_dx.abs
         dy = dx/bounced_dxdy
+        
+        if their_goalline_pass_coordinates.comes_from_up 
+            dy *= -1
+        end
         
         pass_coordinates = @ball_analyzer.give_simulated_pass_coordinates(x_start, y_start, dx, dy, false)
     
@@ -432,7 +452,7 @@ class AI
     # Private
     # Does the magic.
     # Reverse version of the function calculate_offset
-    def calculate_bounced_dxdy(offset, current_dxdy, hit_with_inner)
+    def calculate_change_in_dxdy(offset, current_dxdy, hit_with_inner)
 
         hit_with_inner = true
         
@@ -445,6 +465,7 @@ class AI
         end
 
         change_in_dxdy = offset*a*current_dxdy + b*current_dxdy
+    
     
         return change_in_dxdy    
     end
