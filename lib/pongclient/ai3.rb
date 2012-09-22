@@ -4,7 +4,7 @@ class AI
 
     # How much (in amounts of ball radius) should the inner hitting point be
     # inside the paddle
-    INNER_SAFE_FACTOR = -0.4
+    INNER_SAFE_FACTOR = 0.1
     
     # How much (in amounts of ball radius) should the outer hitting point be
     # inside the paddle.
@@ -255,6 +255,11 @@ class AI
         
         pass_coordinates = @ball_analyzer.give_simulated_pass_coordinates(x_start, y_start, dx, dy, false)
     
+        # Terrible fix to the problem
+        if pass_coordinates == false
+            return
+        end
+        
         puts "testi our pass #{pass_coordinates.y}"
         puts "testi ------------------------------"
         
