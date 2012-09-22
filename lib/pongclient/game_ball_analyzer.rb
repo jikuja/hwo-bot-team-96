@@ -110,7 +110,7 @@ class GameBallAnalyzer
         # Recursive loop to get the last sideline hit before hitting our goalline
         begin
             puts "testi x= #{x_start} y= #{y_start}"
-            sideline_coords = calculate_sideline_hit(x_start, y_start, dx, dy, to_our_goal, print)
+            sideline_coords = calculate_sideline_hit(x_start, y_start, dx, dy, to_our_goal, false)
             if sideline_coords != false
                 x_start = sideline_coords.x
                 y_start = sideline_coords.y
@@ -119,7 +119,7 @@ class GameBallAnalyzer
         end while sideline_coords != false
         
         to_our_goal = false
-        hit_coords = calculate_goalline_pass(x_start, y_start, dx, dy, to_our_goal, print)
+        hit_coords = calculate_goalline_pass(x_start, y_start, dx, dy, to_our_goal, false)
         puts "testi hit_coords #{hit_coords.y}"
         return hit_coords
     end
@@ -203,12 +203,16 @@ class GameBallAnalyzer
         end
 
         # The distance to travel in y before hit
-        y_distance = y_hit - y_start
+        y_distance = (y_hit - y_start).abs
         dx_dy = (dx/dy).abs
-
+        
+        if ! to_our_goal
+            dxdy *= -1
+        end
+        
         # x_hit is the extrapolated value after travelling the x_distance
-        x_hit =  x_start + dx_dy * y_distance
-        puts "testi sideline #{x_hit}"
+        x_hit =  x_start - dx_dy * y_distance
+        puts "testi sideline #{to_our_goal} #{x_hit}"
 
         if to_our_goal && x_hit < @pitch.get_our_goalline + @pitch.ball_radius
             return false

@@ -27,7 +27,7 @@ end
 
 if __FILE__ == $0
     # default values for arguments
-    ai = "ai2.rb"
+    ai = "ai3.rb"
     dump_file = "log/client-dump.log"
     request = nil
     logger_level = 3
