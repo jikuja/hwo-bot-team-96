@@ -18,15 +18,15 @@ class TCPObserver
         #send and save JSON message to request duel or to join into game
         if @request != nil
             @tcp.puts request_duel_message(@player_name, @request) + "\n"
-            $dumplogger.info(request_duel_message(@player_name, @request) + "\n")
+            $dumplogger.info(request_duel_message(@player_name, @request))
         else
             @tcp.puts join_message(@player_name) + "\n"
-            $dumplogger.info(join_message(@player_name) + "\n")
+            $dumplogger.info(join_message(@player_name))
         end
 
         while json = @tcp.gets
             #save incoming message
-            $dumplogger.info(json)
+            $dumplogger.info(json.chomp)
 
             #try to parse incoming JSON message
             #if parsin failscontinue with next message
@@ -39,16 +39,16 @@ class TCPObserver
 
             case message['msgType']
                 when 'joined'
-                    puts "Game visualization url #{message['data']}"
+                    $logger.info "Game visualization url #{message['data']}"
                 when 'gameStarted'
-                    puts "... game on! Paddling against #{message['data']}"
+                    $logger.info "... game on! Paddling against #{message['data']}"
                 when 'gameIsOn'
                     handle_gameIsOn_data message
                 when 'gameIsOver'
                     #clear GameBallAnalyzer state as soon as possible
                     @ball_analyzer.clear_coordinates
                     @sma.clear_speed
-                    puts "Game over... #{message['data']} won!"
+                    $logger.info "Game over... #{message['data']} won!"
                 end
         end
     end

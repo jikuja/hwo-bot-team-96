@@ -38,17 +38,17 @@ class GameBallAnalyzer
     # Public
     def give_pass_coordinates(print=false)
         if @coordinates.length < 2
-            puts "give_pass_coordinates: Ei tarpeeksi dataa" if print
+            $logger.debug "give_pass_coordinates: Ei tarpeeksi dataa" if print
             return false
         end
 
         if ! is_going_towards_our_goalline
-            puts "give_pass_coordinates: Ball is going the other way" if print
+            $logger.debug "give_pass_coordinates: Ball is going the other way" if print
             return false
         end
 
         if get_x < @pitch.get_our_goalline
-            puts "give_pass_coordinates: Damn, the ball has passed our goalline" +
+            $logger.debug "give_pass_coordinates: Damn, the ball has passed our goalline" +
                  "(#{get_x}, #{get_y} #{get_dxdy}" if print
             #return false # as it's never too late to try
         end
@@ -101,9 +101,9 @@ class GameBallAnalyzer
     # Public?
     def print_info
         if @coordinates.length == 1
-            printf("Current x: %6.2f, y: %6.2f\n", get_x, get_y)
+            $logger.info sprintf("Current x: %6.2f, y: %6.2f", get_x, get_y)
         elsif @coordinates.length > 1
-            printf("Current x: %6.2f, y: %6.2f| dx: %8.3f, dy %8.3f| dx/dy: %8.3f\n", get_x, get_y, get_dx, get_dy, get_dx/get_dy)
+            $logger.info sprintf("Current x: %6.2f, y: %6.2f| dx: %8.3f, dy %8.3f| dx/dy: %8.3f", get_x, get_y, get_dx, get_dy, get_dx/get_dy)
         end
     end
 
@@ -170,7 +170,7 @@ class GameBallAnalyzer
         if x_hit < @pitch.get_our_goalline + @pitch.ball_radius
             return false
         else
-            puts "Sideline hit at (#{x_hit}, #{y_hit})" if print
+            $logger.debug "Sideline hit at (#{x_hit}, #{y_hit})" if print
             return XYCoordinates.new(x_hit, y_hit)
         end
     end
@@ -189,7 +189,7 @@ class GameBallAnalyzer
             y_hit = y_start - (1.0/dx_dy) * x_distance
         end
 
-        puts "Will hit our goalline at (#{x_hit}, #{y_hit})" if print
+        $logger.debug "Will hit our goalline at (#{x_hit}, #{y_hit})" if print
 
         return XYCoordinates.new(x_hit, y_hit)
     end
@@ -198,16 +198,16 @@ class GameBallAnalyzer
     def hit_detected(bc, print)
         if @coordinates.length > 1
             if has_hit_sideline(bc)
-                puts "hit_detected - hit to a sideline detected (#{bc.x}, #{bc.y})" if print
-                puts "-----------------------------------------------------------" if print
+                $logger.debug "hit_detected - hit to a sideline detected (#{bc.x}, #{bc.y})" if print
+                $logger.debug "-----------------------------------------------------------" if print
                 return true
             elsif has_hit_goalline(bc)
-                puts "hit_detected - hit to a goal-line detected (#{bc.x}, #{bc.y})" if print
-                puts "-----------------------------------------------------------" if print
+                $logger.debug "hit_detected - hit to a goal-line detected (#{bc.x}, #{bc.y})" if print
+                $logger.debug "-----------------------------------------------------------" if print
                 return true
             elsif has_dxdy_changed_dramatically(bc)
-                puts "hit_detected - dramatic change detected (#{bc.x}, #{bc.y})" if print
-                puts "-----------------------------------------------------------" if print
+                $logger.debug "hit_detected - dramatic change detected (#{bc.x}, #{bc.y})" if print
+                $logger.debug "-----------------------------------------------------------" if print
                 return true
             end
         end

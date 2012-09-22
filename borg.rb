@@ -52,17 +52,16 @@ if __FILE__ == $0
                 ai = arg
             when '--verbose'
                 if arg[/\d+/]
-                    puts "a"
                     logger_level = arg.to_i
                 else
                     print_usage
                     exit 0
                 end
             when '--version'
-                puts "versio: rikki"
+                puts "versio: undefined"
                 exit 0
             when '--no-dump'
-                dump_file = "/dev/null"
+                dump_file = nil
             when '--request'
                 request = arg
             end

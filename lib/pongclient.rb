@@ -13,8 +13,9 @@ class PongClient
     def initialize(player_name, server_host, server_port, dump_logger_file="client-dump.log", logger_level=3, ai="pongclient/ai.rb", request=nil)
         #setup loggers
         #normal logger for stdout
+        #TODO: formatting
         $logger = Logger.new(STDOUT)
-        $logger.level = 3
+        $logger.level = logger_level
 
         #dumplogger for file logging
         #log all client and sserver JSON messages here
@@ -23,7 +24,7 @@ class PongClient
 
         #Use simple format for dump log: easier to parse later
         $dumplogger.formatter = proc do |severity, datetime, progname, msg|
-            (datetime.to_f*1000).to_s + " " + msg.to_s
+            (datetime.to_f*1000).to_s + " " + msg.to_s + "\n"
         end
 
         #try to load supplied AI file
