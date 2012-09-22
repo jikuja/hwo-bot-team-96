@@ -39,6 +39,7 @@ class GameBallAnalyzer
     # Public
     # to_our_goal is boolean if we want to calculate pass coordinates to our goal-line
     # or their goal-line
+    # TODO refactor: bad design, not single-responsibility, has side-effects
     def give_pass_coordinates(to_our_goal, print=false)
         if ! is_enough_data
             puts "testi give_pass_coordinates: Ei tarpeeksi dataa" if print
@@ -93,6 +94,7 @@ class GameBallAnalyzer
         end
         
         hit_coords = calculate_goalline_pass(x_start, y_start, dx, dy, to_our_goal, print)
+        puts "testi actual hit_coords #{hit_coords.x} #{hit_coords.y}"
         return hit_coords
     end
 
@@ -105,7 +107,7 @@ class GameBallAnalyzer
             return false
         end
 
-        to_our_goal = false
+        to_our_goal = true
         
         # Recursive loop to get the last sideline hit before hitting our goalline
         begin
@@ -118,9 +120,8 @@ class GameBallAnalyzer
             end
         end while sideline_coords != false
         
-        to_our_goal = false
         hit_coords = calculate_goalline_pass(x_start, y_start, dx, dy, to_our_goal, false)
-        puts "testi hit_coords #{hit_coords.y}"
+        puts "testi simulated hit_coords #{hit_coords.x} #{hit_coords.y}"
         return hit_coords
     end
 
@@ -136,8 +137,9 @@ class GameBallAnalyzer
     def is_going_towards_our_goalline
         if @coordinates.length < 2
             return false
+        else
+            return get_dx < 0
         end
-        return get_dx < 0
     end
 
     # Public?
@@ -207,18 +209,18 @@ class GameBallAnalyzer
         dx_dy = (dx/dy).abs
         
         if ! to_our_goal
-            dxdy *= -1
+            dx_dy *= -1
         end
         
         # x_hit is the extrapolated value after travelling the x_distance
         x_hit =  x_start - dx_dy * y_distance
-        puts "testi sideline #{to_our_goal} #{x_hit}"
 
         if to_our_goal && x_hit < @pitch.get_our_goalline + @pitch.ball_radius
             return false
         elsif ! to_our_goal && x_hit > @pitch.get_their_goalline - @pitch.ball_radius
             return false
         else
+            puts "testi sideline #{to_our_goal} #{x_hit}"
             $logger.debug "Sideline hit at (#{x_hit}, #{y_hit})" if print
             return XYCoordinates.new(x_hit, y_hit)
         end
@@ -234,9 +236,13 @@ class GameBallAnalyzer
         # The distance to travel in x before hit
         x_distance = ( x_hit - x_start ).abs
         dx_dy = (dx/dy).abs
+        
+        if ! to_our_goal
+            #dx_dy *= -1
+        end
 
         # y_hit is the extrapolated value after travelling the x_distance
-        if (dy > 0)
+        if dy > 0
             y_hit = y_start + (1.0/dx_dy) * x_distance
         elsif
             y_hit = y_start - (1.0/dx_dy) * x_distance

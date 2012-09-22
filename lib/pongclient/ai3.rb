@@ -93,15 +93,15 @@ class AI
                 # move paddle there.
                 #set_target_coordinates_to_opponent_hit_zone
                 set_target_coordinates_to_center
+                return
             else
                 # Normal defense mode.
                 set_target_coordinates_to_center
+                return
             end
-            
-            return
-        else
-            update_where_to_aim_coordinates
         end
+
+        update_where_to_aim_coordinates
 
         # Temp is used, because pass coordinates might return false
         # if there is not enough data after a sideline hit
@@ -201,12 +201,7 @@ class AI
         opponent_paddle_y = @their_paddle.get_y
 
         puts "testi paddle_y #{opponent_paddle_y}"
-        
-        # debug -----
-        @target_y = 0
-        return
-        # debug -----
-        
+                
         # Where the ball will most likely pass opponent goal-line
         their_goalline_pass_coordinates = @ball_analyzer.give_pass_coordinates(false)
         puts "testi their pass #{their_goalline_pass_coordinates.y}"
@@ -214,7 +209,7 @@ class AI
         # Opponent offset from the calculated pass coordinates
         opponent_offset = their_goalline_pass_coordinates.y - opponent_paddle_y
         puts "testi offset #{opponent_offset}"
-                
+
         hit_with_inner = true
         current_dxdy = 1.0
         
@@ -227,14 +222,16 @@ class AI
         
         # Only the relative values of dx and dy matter, so
         # divide bounced_dxdy into components with a dummy way 
-        dx = 1.0
+        dx = (-1)*@ball_analyzer.get_dx.abs
         dy = dx/bounced_dxdy
         
         pass_coordinates = @ball_analyzer.give_simulated_pass_coordinates(x_start, y_start, dx, dy, false)
     
         puts "testi our pass #{pass_coordinates.y}"
         puts "testi ------------------------------"
-        @target_y = 0 #pass_coordinates.y
+        
+        @target_y = pass_coordinates.y
+        @pass_y  = pass_coordinates.y
         # set target coordinates to there
     end
 
@@ -552,11 +549,6 @@ class AI
 
     # Send the JSON-message to the server
     def movement_message(speed)
-        if speed === -0.0
-            speed = 0.0
-        end
-        
-        puts "testi sending speed #{speed}"
         %Q!{"msgType":"changeDir","data": #{speed}}!
     end
 
