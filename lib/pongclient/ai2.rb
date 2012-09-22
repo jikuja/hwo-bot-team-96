@@ -110,10 +110,10 @@ class AI
             paddle_offset = get_offset(target_dxdy, @ball_analyzer.get_dxdy )
 
             # Reduce the offset because we don't want to take a too big risk
-            @log_message += "\n\i" +  "using offset #{paddle_offset} before limiting"
+            @log_message += "\n\t" +  "using offset #{paddle_offset} before limiting"
             #paddle_offset = adjust_offset_depending_on_uncertainty(paddle_offset)
             paddle_offset = limit_offset(paddle_offset)
-            @log_message += "\n" +  "using offset #{paddle_offset} after limiting"
+            @log_message += "\n\t" +  "using offset #{paddle_offset} after limiting"
 
             @target_y = pass_coordinates.y + paddle_offset
             limit_target_coordinates
@@ -132,12 +132,12 @@ class AI
             # Shoots the ball into the corner that is easier to aim
             if @ball_analyzer.ball_will_come_from_up
                 # Aim down
-                @log_message += "\n" +  "aim bottom"
+                @log_message += "\n\t" +  "aim bottom"
                 aim_x = @pitch.get_their_goalline
                 aim_y = @pitch.bottom_sideline - @aim_distance_from_sideline
             else
                 # Aim up
-                @log_message += "\n" +  "aim up"
+                @log_message += "\n\t" +  "aim up"
                 aim_x = @pitch.get_their_goalline
                 aim_y = @pitch.top_sideline - @aim_distance_from_sideline
             end
@@ -147,13 +147,13 @@ class AI
                 if @pass_y < @pitch.get_center_y
                     # The ball bounces just from the sideline before hitting
                     # our paddle. We can't really aim in these situations.
-                    @log_message += "\n" +  "aim center from top"
+                    @log_message += "\n\t" +  "aim center from top"
                     aim_x = @pitch.get_their_goalline
                     aim_y = @pitch.get_center_y
                 else
                     # Hit the ball to the sideline
                     # TODO -- calculate the sideline coordinates
-                    @log_message += "\n" +  "aim bottom sideline from top"
+                    @log_message += "\n\t" +  "aim bottom sideline from top"
     
                     aim_x = 200.0
                     aim_y = @pitch.bottom_sideline
@@ -162,13 +162,13 @@ class AI
                 if @pass_y > @pitch.get_center_y
                     # The ball bounces just from the sideline before hitting
                     # our paddle. We can't really aim in these situations.
-                    @log_message += "\n" +  "aim center from bottom"
+                    @log_message += "\n\t" +  "aim center from bottom"
                     aim_x = @pitch.get_their_goalline
                     aim_y = @pitch.get_center_y
                 else
                     # TODO -- calculate the sideline coordinates
                     # Hit the ball to the sideline
-                    @log_message += "\n" +  "aim top sideline from bottom"
+                    @log_message += "\n\t" +  "aim top sideline from bottom"
                     aim_x = 200.0
                     aim_y = @pitch.top_sideline
                 end
@@ -199,7 +199,7 @@ class AI
             paddle_offset -= pixel_uncertainty_total            
         end
                 
-        @log_message += "\n" +  "paddle_offset #{paddle_offset} total #{pixel_uncertainty_total}"
+        @log_message += "\n\t" +  "paddle_offset #{paddle_offset} total #{pixel_uncertainty_total}"
         
         return paddle_offset
     end
@@ -215,7 +215,7 @@ class AI
         # The amount depends on whether we are using the inner or outer side.
         max_inner_offset = @pitch.get_half_of_paddle_height - get_inner_safe_zone
         max_outer_offset = @pitch.get_half_of_paddle_height - get_outer_safe_zone
-        @log_message += "\n" +  "max #{max_outer_offset} #{max_inner_offset}"
+        @log_message += "\n\t" +  "max #{max_outer_offset} #{max_inner_offset}"
 
         if ( @ball_analyzer.ball_will_come_from_up &&
              paddle_offset < 0 &&
@@ -249,7 +249,7 @@ class AI
             paddle_offset = paddle_offset
         end
 
-        @log_message += "\n" +  "limit_offset #{@ball_analyzer.ball_will_come_from_up} #{paddle_offset}"
+        @log_message += "\n\t" +  "limit_offset #{@ball_analyzer.ball_will_come_from_up} #{paddle_offset}"
         return paddle_offset
     end
 
@@ -308,12 +308,12 @@ class AI
             if target_dxdy > current_dxdy.abs
                 # We want to increase dxdy.
                 # Move paddle down, hit with inner side.
-                @log_message += "\n" +  "bounce - up, down"                
+                @log_message += "\n\t" +  "bounce - up, down"                
                 return calculate_offset(needed_change_of_dxdy, current_dxdy, true)
             else
                 # We want to decrease dxdy.
                 # Move paddle up, hit with outer side.
-                @log_message += "\n" +  "bounce - up, up"
+                @log_message += "\n\t" +  "bounce - up, up"
                 return (-1)*calculate_offset(needed_change_of_dxdy, current_dxdy, false)
             end
             
@@ -323,12 +323,12 @@ class AI
             if target_dxdy.abs > current_dxdy
                 # We want to increase dxdy.
                 # Move paddle up, hit with inner side.
-                @log_message += "\n" +  "bounce - down, up"
+                @log_message += "\n\t" +  "bounce - down, up"
                 return (-1)*calculate_offset(needed_change_of_dxdy, current_dxdy, true)
             else
                 # We want to decrease dxdy.
                 # Move paddle down, hit with outer side.
-                @log_message += "\n" +  "bounce - down, down"                
+                @log_message += "\n\t" +  "bounce - down, down"                
                 return calculate_offset(needed_change_of_dxdy, current_dxdy, false)
             end
         else
@@ -336,7 +336,7 @@ class AI
             # We want to bounce the ball to the same direction where it comes from
             # (this is very, very, very difficult or impossilbe)
             
-            @log_message += "\n" +  "error - unrealistic bouncing asked"
+            @log_message += "\n\t" +  "error - unrealistic bouncing asked"
             return 0.0 # Just make a random hit
         end
     end
@@ -352,7 +352,7 @@ class AI
         else
             # TODO
             # We can't do a hit like what was asked. Just hit it.
-            @log_message += "\n" +  "error - asked to bounce the ball back"
+            @log_message += "\n\t" +  "error - asked to bounce the ball back"
             return 5.0
         end
     end
@@ -372,7 +372,7 @@ class AI
         end
 
         temp_offset = needed_change_of_dxdy / (a * current_dxdy) - b / a        
-        @log_message += "\n" +  "change_dxdy need=#{needed_change_of_dxdy} cur=#{current_dxdy} offset=#{temp_offset}"
+        @log_message += "\n\t" +  "change_dxdy need=#{needed_change_of_dxdy} cur=#{current_dxdy} offset=#{temp_offset}"
         return temp_offset
             
     end
@@ -423,13 +423,13 @@ class AI
     # or is the coordinate too close to a sideline? 
     def pass_coordinates_can_be_hit_with_both_sides_of_paddle
         if @pass_y < @pitch.paddle_height - get_outer_safe_zone
-            @log_message += "\n" +  "not hitable with both sides up"
+            @log_message += "\n\t" +  "not hitable with both sides up"
             return false
         elsif @pass_y > @pitch.bottom_sideline - @pitch.paddle_height + get_outer_safe_zone
-            @log_message += "\n" +  "not hitable with both sides down"
+            @log_message += "\n\t" +  "not hitable with both sides down"
             return false
         else
-            @log_message += "\n" +  "hitable"
+            @log_message += "\n\t" +  "hitable"
             return true
         end
     end    
