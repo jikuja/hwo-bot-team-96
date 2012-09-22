@@ -39,7 +39,8 @@ class GameBallAnalyzer
     # Public
     # to_our_goal is boolean if we want to calculate pass coordinates to our goal-line
     # or their goal-line
-    # TODO refactor: bad design, not single-responsibility, has side-effects
+    # TODO Refactor: bad design, not single-responsibility, has side-effects
+    # Code quality awful, but probably not time to redesign it.
     def give_pass_coordinates(to_our_goal, print=false)
         if ! is_enough_data
             puts "testi give_pass_coordinates: Ei tarpeeksi dataa" if print

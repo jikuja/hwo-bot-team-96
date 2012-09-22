@@ -49,6 +49,8 @@ class AI
         # it will bounce near the center and travel longer time.
         @aim_distance_from_sideline = 50.0
 
+        # If the paddle is moved based on a guess
+        @guess_mode = false
     end
 
     # Public
@@ -91,16 +93,18 @@ class AI
             if ! @their_paddle.is_moving && @ball_analyzer.is_enough_data
                 # Calculate where to opponent is aiming to hit the ball,
                 # move paddle there.
+                @guess_mode = true
                 set_target_coordinates_to_opponent_hit_zone
-                #set_target_coordinates_to_center
                 return
             else
                 # Normal defense mode.
+                @guess_mode = false # This is basically a guess, but still
                 set_target_coordinates_to_center
                 return
             end
         end
-
+        
+        @guess_mode = false
         update_where_to_aim_coordinates
 
         # Temp is used, because pass coordinates might return false
@@ -195,6 +199,7 @@ class AI
     end
 
     # Set our paddle target coordinates to where the opponent supposedly will hit
+    # TODO Code quality awful, but probably not time to refactor it.
     def set_target_coordinates_to_opponent_hit_zone
         
         # Where the opponent is located
@@ -224,7 +229,7 @@ class AI
         change_in_dxdy = calculate_change_in_dxdy(opponent_offset, current_dxdy, hit_with_inner)
         change_in_dxdy = change_in_dxdy.abs
         
-        if hit_with_inner       
+        if hit_with_inner
             change_in_dxdy *= -1
         end
         
@@ -250,9 +255,9 @@ class AI
         puts "testi our pass #{pass_coordinates.y}"
         puts "testi ------------------------------"
         
+        # set target coordinates to there
         @target_y = pass_coordinates.y
         @pass_y  = pass_coordinates.y
-        # set target coordinates to there
     end
 
     # Private
@@ -326,6 +331,31 @@ class AI
 
     # Gives the speed that we wish our paddle will go
     def get_target_speed
+        if @guess_mode
+            return get_sloppy_speed
+        else
+            return get_intelligent_speed
+        end
+    end
+    
+    def get_sloppy_speed
+        if paddle_is_in_risk_of_hitting_the_sideline
+            # Stop the paddle before it hits the sideline
+            return 0.0
+        elsif paddle_is_covering_pass_coordinates
+            return 0.0
+        else
+            if paddle_is_above_target
+                # The paddle is far from the target and above it, full speed downwards
+                return 1.0
+            else
+                # Full speed upwards
+                return -1.0
+            end
+        end    
+    end
+    
+    def get_intelligent_speed
         if paddle_is_in_risk_of_hitting_the_sideline
             # Stop the paddle before it hits the sideline
             return 0.0
