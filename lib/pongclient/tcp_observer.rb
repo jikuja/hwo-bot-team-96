@@ -127,6 +127,6 @@ class TCPObserver
 
         #and finally print analysis
         @ball_analyzer.print_info
-        @ball_analyzer.give_pass_coordinates(true)
+        #@ball_analyzer.give_pass_coordinates(true)
     end
 end

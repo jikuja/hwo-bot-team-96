@@ -1,4 +1,5 @@
 class GameBallAnalyzer
+
     # Public
     SIDELINE_HIT_OFFSET = 1.0
 
@@ -36,19 +37,24 @@ class GameBallAnalyzer
     end
 
     # Public
-    def give_pass_coordinates(print=false)
-        if @coordinates.length < 2
-            $logger.debug "give_pass_coordinates: Ei tarpeeksi dataa" if print
+    # to_our_goal is boolean if we want to calculate pass coordinates to our goal-line
+    # or their goal-line
+    def give_pass_coordinates(to_our_goal, print=false)
+        if ! is_enough_data
+            puts "testi give_pass_coordinates: Ei tarpeeksi dataa" if print
             return false
         end
 
-        if ! is_going_towards_our_goalline
-            $logger.debug "give_pass_coordinates: Ball is going the other way" if print
+        if to_our_goal && ! is_going_towards_our_goalline
+            puts "give_pass_coordinates: Ball is going the other way" if print
+            return false
+        elsif ! to_our_goal && is_going_towards_our_goalline
+            puts "give_pass_coordinates: Ball is going the other way" if print
             return false
         end
 
-        if get_x < @pitch.get_our_goalline
-            $logger.debug "give_pass_coordinates: Damn, the ball has passed our goalline" +
+        if to_our_goal && get_x < @pitch.get_our_goalline
+            puts "give_pass_coordinates: Damn, the ball has passed our goalline" +
                  "(#{get_x}, #{get_y} #{get_dxdy}" if print
             #return false # as it's never too late to try
         end
@@ -61,27 +67,63 @@ class GameBallAnalyzer
 
         # Recursive loop to get the last sideline hit before hitting our goalline
         begin
-            sideline_coords = calculate_sideline_hit(x_start, y_start, dx, dy, print)
+            sideline_coords = calculate_sideline_hit(x_start, y_start, dx, dy, to_our_goal, print)
             if sideline_coords != false
                 x_start = sideline_coords.x
                 y_start = sideline_coords.y
                 dy *= -1.0
+                
+                # Not used when ! to_our_goal
                 sideline_hits += 1
-                @ball_will_come_from_up = y_start < @pitch.get_center_y
+                comes_from_up = y_start < @pitch.get_center_y
+
             end
         end while sideline_coords != false
 
-        @future_sideline_hits = sideline_hits
+        if to_our_goal
+            @future_sideline_hits = sideline_hits
         
-        # If there's no sideline hits, the current direction determines if it'll
-        # come from up
-        if sideline_hits == 0
-            @ball_will_come_from_up = get_dy > 0
+            # If there's no sideline hits,
+            # the current direction determines if it'll come from up
+            if sideline_hits == 0
+                @ball_will_come_from_up = get_dy > 0
+            else
+                @ball_will_come_from_up = comes_from_up
+            end
         end
         
-        hit_coords = calculate_our_goalline_pass(x_start, y_start, dx, dy, print)
+        hit_coords = calculate_goalline_pass(x_start, y_start, dx, dy, to_our_goal, print)
         return hit_coords
     end
+
+    # Public
+    # Give pass coordinates using simulated data
+    # TODO refactor and remove needless code repetition (give_pass_coordinates)
+    def give_simulated_pass_coordinates(x_start, y_start, dx, dy, print=false)
+        if ! is_enough_data
+            puts "testi give_pass_coordinates: Ei tarpeeksi dataa" if print
+            return false
+        end
+
+        to_our_goal = false
+        
+        # Recursive loop to get the last sideline hit before hitting our goalline
+        begin
+            puts "testi x= #{x_start} y= #{y_start}"
+            sideline_coords = calculate_sideline_hit(x_start, y_start, dx, dy, to_our_goal, print)
+            if sideline_coords != false
+                x_start = sideline_coords.x
+                y_start = sideline_coords.y
+                dy *= -1.0
+            end
+        end while sideline_coords != false
+        
+        to_our_goal = false
+        hit_coords = calculate_goalline_pass(x_start, y_start, dx, dy, to_our_goal, print)
+        puts "testi hit_coords #{hit_coords.y}"
+        return hit_coords
+    end
+
 
     # Public
     # From the ball's current location, how many times it will hit a sideline before
@@ -108,7 +150,7 @@ class GameBallAnalyzer
     end
 
     # Public
-    def is_enough_coordinates
+    def is_enough_data
         return @coordinates.length >= 2
     end
 
@@ -153,7 +195,7 @@ class GameBallAnalyzer
 
     private # --------------------------------------------------------------------
 
-    def calculate_sideline_hit(x_start, y_start, dx, dy, print)
+    def calculate_sideline_hit(x_start, y_start, dx, dy, to_our_goal, print)
         if dy < 0
             y_hit = @pitch.top_sideline_with_offset + @pitch.ball_radius
         else
@@ -161,13 +203,16 @@ class GameBallAnalyzer
         end
 
         # The distance to travel in y before hit
-        y_distance = ( y_hit - y_start ).abs
+        y_distance = y_hit - y_start
         dx_dy = (dx/dy).abs
 
         # x_hit is the extrapolated value after travelling the x_distance
-        x_hit =  x_start - dx_dy * y_distance
+        x_hit =  x_start + dx_dy * y_distance
+        puts "testi sideline #{x_hit}"
 
-        if x_hit < @pitch.get_our_goalline + @pitch.ball_radius
+        if to_our_goal && x_hit < @pitch.get_our_goalline + @pitch.ball_radius
+            return false
+        elsif ! to_our_goal && x_hit > @pitch.get_their_goalline - @pitch.ball_radius
             return false
         else
             $logger.debug "Sideline hit at (#{x_hit}, #{y_hit})" if print
@@ -175,8 +220,12 @@ class GameBallAnalyzer
         end
     end
 
-    def calculate_our_goalline_pass(x_start, y_start, dx, dy, print)
-        x_hit = @pitch.get_our_goalline
+    def calculate_goalline_pass(x_start, y_start, dx, dy, to_our_goal, print)
+        if to_our_goal
+            x_hit = @pitch.get_our_goalline
+        else
+            x_hit = @pitch.get_their_goalline
+        end
 
         # The distance to travel in x before hit
         x_distance = ( x_hit - x_start ).abs

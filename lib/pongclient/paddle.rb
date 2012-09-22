@@ -18,13 +18,14 @@ class Paddle
     end
 
     # Public
-    def get_x
-        return @coordinates[-1].x
-    end
-
-    # Public
     def get_y
         return @coordinates[-1].y
+    end
+    
+    # Public
+    # This is only used for opponent paddle analyzing. Make a new class?
+    def is_moving
+        return (@coordinates[-1].y - @coordinates[-2].y).abs > 0.0000001
     end
     
     private #-------------------------------------------------------------------------
@@ -36,6 +37,8 @@ class Paddle
     end
 
     # Private
+    # ?? This should probably be a public method and called every once in a while
+    # just because it stores data that is not really used.
     def clear_coordinates
         @coordinates.clear    
     end

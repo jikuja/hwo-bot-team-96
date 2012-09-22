@@ -34,7 +34,9 @@ class SentMessagesAnalyzer
     end
 
     def clear_speed
-        @sent_messages[-1].speed = 0.0
+        if @sent_messages.length > 0
+            @sent_messages[-1].speed = 0.0
+        end
     end
 end
 
