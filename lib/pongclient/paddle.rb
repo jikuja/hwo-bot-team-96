@@ -28,6 +28,13 @@ class Paddle
         return (@coordinates[-1].y - @coordinates[-2].y).abs > 0.0000001
     end
 
+    # Public
+    # ?? This should probably be a public method and called every once in a while
+    # just because it stores data that is not really used.
+    def clear_coordinates
+        @coordinates.clear
+    end
+
     private #-------------------------------------------------------------------------
     # Private
     # The parameter coordinate is for the upper side of the paddle
@@ -35,13 +42,5 @@ class Paddle
     def fix_y(y_coord)
         return y_coord+@pitch.paddle_height/2.0
     end
-
-    # Private
-    # ?? This should probably be a public method and called every once in a while
-    # just because it stores data that is not really used.
-    def clear_coordinates
-        @coordinates.clear
-    end
-
 end
 

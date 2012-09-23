@@ -1,5 +1,6 @@
 require 'socket'
 require 'logger'
+require 'thread'
 
 require 'pongclient/game_ball_analyzer.rb'
 require 'pongclient/pitch.rb'
@@ -27,6 +28,9 @@ class PongClient
             (datetime.to_f*1000).to_s + " " + msg.to_s + "\n"
         end
 
+        #setup mutex
+        $mutex = Mutex.new
+
         #try to load supplied AI file
         # TODO: make better!
         #       do we needd to supply some kind of ai in lib/?
@@ -45,7 +49,7 @@ class PongClient
                 tried_from_dot = true
                 retry
             end
-            puts e
+            puts e.backtrace
             exit 0
         end
 

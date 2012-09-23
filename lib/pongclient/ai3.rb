@@ -59,22 +59,24 @@ class AI
         while true
             sleep 0.01
 
-            if @pitch.ready && @our_paddle.ready && @ball_analyzer.is_enough_data
-                # At the moment we take aim only once per ball.
-                # The AI doesn't adapt to changes on the field when the ball
-                # is coming our way
-                update_target_coordinates
-                speed = get_target_speed
+            $mutex.synchronize do
+                if @pitch.ready && @our_paddle.ready && @ball_analyzer.is_enough_data
+                    # At the moment we take aim only once per ball.
+                    # The AI doesn't adapt to changes on the field when the ball
+                    # is coming our way
+                    update_target_coordinates
+                    speed = get_target_speed
 
-                if (! @sma.is_same_speed(speed) ) && ( @sma.count_messages(2) < 19 )
-                    @sma.log_message(speed)
-                    @tcp.puts movement_message(speed) + "\n"
-                    $dumplogger.info(movement_message(speed))
-                    $logger.debug @log_message
-                else
-                    #actually this is stupid: only one debug level in loggers!
-                    #$logger.debug @log_message
-                    @log_message = "ai3.rb: "
+                    if (! @sma.is_same_speed(speed) ) && ( @sma.count_messages(2) < 19 )
+                        @sma.log_message(speed)
+                        @tcp.puts movement_message(speed) + "\n"
+                        $dumplogger.info(movement_message(speed))
+                        $logger.debug @log_message
+                    else
+                        #actually this is stupid: only one debug level in loggers!
+                        #$logger.debug @log_message
+                        @log_message = "ai3.rb: "
+                    end
                 end
             end
         end
