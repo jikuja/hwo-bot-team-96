@@ -69,7 +69,7 @@ class AI
                 if (! @sma.is_same_speed(speed) ) && ( @sma.count_messages(2) < 19 )
                     @sma.log_message(speed)
                     @tcp.puts movement_message(speed) + "\n"
-                    $dumplogger.info(movement_message(speed) + "\n")
+                    $dumplogger.info(movement_message(speed))
                     $logger.debug @log_message
                 else
                     #actually this is stupid: only one debug level in loggers!
@@ -241,7 +241,7 @@ class AI
         bounced_dxdy = current_dxdy.abs + change_in_dxdy
         bounced_dxdy = bounced_dxdy.abs
         
-        puts "testi bounced #{bounced_dxdy}"
+        $logger.debug "testi bounced #{bounced_dxdy}"
         
         x_start = their_goalline_pass_coordinates.x
         y_start = their_goalline_pass_coordinates.y

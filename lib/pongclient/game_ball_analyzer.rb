@@ -31,20 +31,20 @@ class GameBallAnalyzer
     # Code quality awful, but probably not time to redesign it.
     def give_pass_coordinates(to_our_goal, print=false)
         if ! is_enough_data
-            puts "testi give_pass_coordinates: Ei tarpeeksi dataa" if print
+            $logger.debug "testi give_pass_coordinates: Ei tarpeeksi dataa" if print
             return false
         end
 
         if to_our_goal && ! is_going_towards_our_goalline
-            puts "give_pass_coordinates: Ball is going the other way" if print
+            $logger.debug "give_pass_coordinates: Ball is going the other way" if print
             return false
         elsif ! to_our_goal && is_going_towards_our_goalline
-            puts "give_pass_coordinates: Ball is going the other way" if print
+            $logger.debug "give_pass_coordinates: Ball is going the other way" if print
             return false
         end
 
         if to_our_goal && get_x < @pitch.get_our_goalline
-            puts "give_pass_coordinates: Damn, the ball has passed our goalline" +
+            $logger.debug "give_pass_coordinates: Damn, the ball has passed our goalline" +
                  "(#{get_x}, #{get_y} #{get_dxdy}" if print
             #return false # as it's never too late to try
         end
@@ -80,7 +80,7 @@ class GameBallAnalyzer
         end
         
         hit_coords = calculate_goalline_pass(x_start, y_start, dx, dy, to_our_goal, print)
-        puts "testi actual hit_coords #{hit_coords.x} #{hit_coords.y}"
+        $logger.debug "testi actual hit_coords #{hit_coords.x} #{hit_coords.y}"
         
         return XYDCoordinates.new(hit_coords.x, hit_coords.y, ball_will_come_from_up)
     end
@@ -90,7 +90,7 @@ class GameBallAnalyzer
     # TODO refactor and remove needless code repetition (give_pass_coordinates)
     def give_simulated_pass_coordinates(x_start, y_start, dx, dy, print=false)
         if ! is_enough_data
-            puts "testi give_pass_coordinates: Ei tarpeeksi dataa" if print
+            $logger.debug "testi give_pass_coordinates: Ei tarpeeksi dataa" if print
             return false
         end
 
@@ -98,7 +98,7 @@ class GameBallAnalyzer
         
         # Recursive loop to get the last sideline hit before hitting our goalline
         begin
-            puts "testi x= #{x_start} y= #{y_start}"
+            $logger.debug "testi x= #{x_start} y= #{y_start}"
             sideline_coords = calculate_sideline_hit(x_start, y_start, dx, dy, to_our_goal, false)
             if sideline_coords != false
                 x_start = sideline_coords.x
@@ -109,7 +109,7 @@ class GameBallAnalyzer
         
         hit_coords = calculate_goalline_pass(x_start, y_start, dx, dy, to_our_goal, false)
         
-        puts "testi simulated hit_coords #{hit_coords.x} #{hit_coords.y}"
+        $logger.debug "testi simulated hit_coords #{hit_coords.x} #{hit_coords.y}"
         return hit_coords
     end
     
@@ -201,7 +201,7 @@ class GameBallAnalyzer
         elsif ! to_our_goal && x_hit > @pitch.get_their_goalline - @pitch.ball_radius
             return false
         else
-            puts "testi sideline #{to_our_goal} #{x_hit}"
+            $logger.debug "testi sideline #{to_our_goal} #{x_hit}"
             $logger.debug "Sideline hit at (#{x_hit}, #{y_hit})" if print
             return XYCoordinates.new(x_hit, y_hit)
         end
