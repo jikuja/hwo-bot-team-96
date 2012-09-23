@@ -145,32 +145,67 @@ class AI
         if pass_coordinates_can_be_hit_with_both_sides_of_paddle
             # Shoots the ball into the corner that is easier to aim
             if @ball_will_come_from_up
-                # Aim down
+                # Aim bottom corner
                 @log_message += "\n\t" +  "aim bottom"
                 aim_x = @pitch.get_their_goalline
                 aim_y = @pitch.bottom_sideline - @aim_distance_from_sideline
             else
-                # Aim up
+                # Aim top corner
                 @log_message += "\n\t" +  "aim up"
                 aim_x = @pitch.get_their_goalline
-                aim_y = @pitch.top_sideline - @aim_distance_from_sideline
+                aim_y = @pitch.top_sideline + @aim_distance_from_sideline
             end
         else
-            # Can't hit it freely. Plan B: Let's hit a sideline instead.
+            # Can't hit it freely. Plan B: Let's cope or hit a sideline instead
+
             if @ball_will_come_from_up
                 if @pass_y < @pitch.get_center_y
+                    # Ball bounces from up, but hits our goal-line near the top
                     # The ball bounces just from the sideline before hitting
                     # our paddle. We can't really aim in these situations.
-                    @log_message += "\n\t" +  "aim center from top"
-                    aim_x = @pitch.get_their_goalline
-                    aim_y = @pitch.get_center_y
+
+                    if @their_paddle.get_y > @pitch.get_height * (3.0/4.0)
+                        # Opponent paddle is up, try to keep the
+                        # ball as low as possible
+                        @log_message += "\n\t" +  "aim from top 1"
+                        aim_x = @pitch.get_their_goalline
+                        aim_y = @pitch.top_sideline + @aim_distance_from_sideline
+                    elsif @their_paddle.get_y < @pitch.get_height * (1.0/4.0)
+                        # Opponent paddle is low, aim high by
+                        # bouncing the ball to the sideline
+                        @log_message += "\n\t" +  "aim from top 2"
+                        aim_x = 150.0
+                        aim_y = @pitch.top_sideline
+                    else
+                        # Opponent is close to the edges, aim to the center
+                        # by bouncing it near the pitch center line
+                        @log_message += "\n\t" +  "aim from top 3"
+                        aim_x = @pitch.get_their_goalline / 2.0
+                        aim_y = @pitch.get_center_y
+                    end
                 else
                     # Hit the ball to the sideline
                     # TODO -- calculate the sideline coordinates
-                    @log_message += "\n\t" +  "aim bottom sideline from top"
-
-                    aim_x = 200.0
-                    aim_y = @pitch.bottom_sideline
+                    
+                    if @their_paddle.get_y < @pitch.get_height * (1.0/4.0)
+                        # Opponent paddle is up, try to keep the
+                        # ball as low as possible
+                        @log_message += "\n\t" +  "aim from top 1"
+                        aim_x = @pitch.get_their_goalline
+                        aim_y = @pitch.bottom_sideline - @aim_distance_from_sideline
+                    elsif @their_paddle.get_y > @pitch.get_height * (3.0/4.0)
+                        # Opponent paddle is low, aim high by
+                        # bouncing the ball to the sideline
+                        @log_message += "\n\t" +  "aim from top 2"                        
+                        aim_x = 150.0
+                        aim_y = @pitch.bottom_sideline                   
+                    else
+                        # Opponent is close to the edges, aim to the center
+                        # by bouncing it from the pitch center
+                        @log_message += "\n\t" +  "aim from top 3"                        
+                        aim_x = @pitch.get_their_goalline / 2.0
+                        aim_y = @pitch.get_center_y
+                    end
                 end
             else
                 if @pass_y > @pitch.get_center_y

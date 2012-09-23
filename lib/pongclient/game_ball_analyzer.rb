@@ -219,6 +219,11 @@ class GameBallAnalyzer
         x_distance = ( x_hit - x_start ).abs
         dx_dy = (dx/dy).abs
 
+        if ! to_our_goal
+            # This doesn't change anything
+            #dx_dy *= -1
+        end
+
         # y_hit is the extrapolated value after travelling the x_distance
         if dy > 0
             y_hit = y_start + (1.0/dx_dy) * x_distance
