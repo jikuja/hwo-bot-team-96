@@ -44,7 +44,7 @@ class AI
         # How close (pixels) to the sideline we want to aim our hits.
         # Rather hit too near the center than hit a sideline, because after a hit
         # it will bounce near the center and travel longer time.
-        @aim_distance_from_sideline = 50.0
+        @aim_distance_from_sideline = 20.0
 
         # If the paddle is currently moved based on a guess
         @guess_mode = false
@@ -148,7 +148,7 @@ class AI
             if @ball_will_come_from_up
                 # Ball comes from up
                 
-                if @ball_analyzer.get_dxdy.abs > 5.0 && @our_paddle.get_y < @pitch.get_height * 0.3
+                if @ball_analyzer.get_dxdy.abs > 2.0 && @our_paddle.get_y < @pitch.get_height * 0.35 && @ball_analyzer.number_of_hits < 20
                     # If the ball comes  at a low angle and our paddle is too up,
                     # it's risky to aim at the bottom corner.
                     # The opponent will probably be able to reach the ball
@@ -159,7 +159,7 @@ class AI
                     
                     aim_x = @pitch.get_their_goalline
                     aim_y = @pitch.get_height * height_factor
-                elsif @ball_analyzer.get_dxdy.abs > 10.0
+                elsif @ball_analyzer.get_dxdy.abs > 2.5 && @ball_analyzer.number_of_hits < 18
                     height_factor = @our_paddle.get_y / @pitch.get_height + 0.1
                     
                     aim_x = @pitch.get_their_goalline
@@ -173,7 +173,7 @@ class AI
             else
                 # Ball comes from down
                 
-                if @ball_analyzer.get_dxdy.abs > 5.0 && @our_paddle.get_y > @pitch.get_height * 0.3
+                if @ball_analyzer.get_dxdy.abs > 2.0 && @our_paddle.get_y > @pitch.get_height * 0.65 && @ball_analyzer.number_of_hits < 20
 
                     # If the ball comes and at a low angle and our paddle is too up,
                     # it's risky to aim at the top corner.
@@ -185,7 +185,7 @@ class AI
 
                     aim_x = @pitch.get_their_goalline
                     aim_y = @pitch.get_height * height_factor
-                elsif @ball_analyzer.get_dxdy.abs > 10.0
+                elsif @ball_analyzer.get_dxdy.abs > 2.5 && @ball_analyzer.number_of_hits < 18
                     height_factor = @our_paddle.get_y / @pitch.get_height - 0.1
                     
                     aim_x = @pitch.get_their_goalline

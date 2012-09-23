@@ -53,6 +53,7 @@ class TCPObserver
                         @their_paddle_analyzer.clear_coordinates
                         @our_paddle_analyzer.clear_coordinates
                         @sma.clear_speed
+                        @ball_analyzer.number_of_hits = 0
                     end
                     $logger.info "Game over... #{message['data']} won!"
                 else

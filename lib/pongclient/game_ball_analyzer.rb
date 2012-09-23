@@ -1,5 +1,7 @@
 class GameBallAnalyzer
 
+    attr_accessor :number_of_hits
+
     # Public
     SIDELINE_HIT_OFFSET = 1.0
 
@@ -9,6 +11,7 @@ class GameBallAnalyzer
         # Contains the current ball coordinates
         # Cleared after hits to sidelines, goallines or paddles
         @coordinates = Array.new
+        @number_of_hits = 0
     end
 
     def clear_coordinates
@@ -279,6 +282,7 @@ class GameBallAnalyzer
         # If the sign of dx has changed, then the ball must have hit a sideline
         dx_future = bc.x - get_x
         keeps_same_direction = (dx_future < 0 && get_dx < 0) || (dx_future > 0 && get_dx > 0 )
+        @number_of_hits += 1
         return ! keeps_same_direction
     end
 
