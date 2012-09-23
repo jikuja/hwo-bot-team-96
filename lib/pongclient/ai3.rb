@@ -207,12 +207,12 @@ class AI
                 
                 @log_message += "\n\t" +  "aim from top 1"
                 aim_x = @pitch.get_their_goalline
-                aim_y = @pitch.top_sideline + @aim_distance_from_sideline
+                aim_y = @pitch.top_sideline + @aim_distance_from_sideline/2.0
             else
                 # We hit the ball near bottom
                 @log_message += "\n\t" +  "aim from bottom 1"
                 aim_x = @pitch.get_their_goalline
-                aim_y = @pitch.bottom_sideline - @aim_distance_from_sideline
+                aim_y = @pitch.bottom_sideline - @aim_distance_from_sideline/2.0
             end
         end
 
