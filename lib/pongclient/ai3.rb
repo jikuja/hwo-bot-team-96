@@ -149,9 +149,11 @@ class AI
         if pass_coordinates_can_be_hit_with_both_sides_of_paddle
             # Shoots the ball into the corner that is easier to aim
             if @ball_will_come_from_up
+                # Ball comes from up
                 
-                if @our_paddle.get_y < @pitch.get_height * (1.0/3.0)
-                    # If our paddle is too up, it's risky to aim at bottom corner.
+                if @ball_analyzer.get_dxdy > -0.7 && @our_paddle.get_y < @pitch.get_height * (1.0/3.0)
+                    # If the ball comes and at a low angle and our paddle is too up,
+                    # it's risky to aim at the bottom corner.
                     # The opponent will probably be able to reach the ball
                     # and aim at our bottom corner.
                     
@@ -165,8 +167,12 @@ class AI
                     aim_y = @pitch.bottom_sideline - @aim_distance_from_sideline
                 end
             else
-                if @our_paddle.get_y > @pitch.get_height * (2.0/3.0)
-                    # If our paddle is too down, it's risky to aim at top corner.
+                # Ball comes from down
+                
+                if @ball_analyzer.get_dxdy < 0.7 && @our_paddle.get_y > @pitch.get_height * (2.0/3.0)
+
+                    # If the ball comes and at a low angle and our paddle is too up,
+                    # it's risky to aim at the top corner.
                     # The opponent will probably be able to reach the ball
                     # and aim at our top corner.
                     
