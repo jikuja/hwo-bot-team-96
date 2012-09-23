@@ -202,7 +202,7 @@ class GameBallAnalyzer
         # x_hit is the extrapolated value after travelling the x_distance
         x_hit =  x_start - dx_dy * y_distance
 
-        if to_our_goal && x_hit =< @pitch.get_our_goalline + @pitch.ball_radius
+        if to_our_goal && x_hit <= @pitch.get_our_goalline + @pitch.ball_radius
             return false
         elsif ! to_our_goal && x_hit >= @pitch.get_their_goalline - @pitch.ball_radius
             return false
