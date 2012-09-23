@@ -49,7 +49,7 @@ class PongClient
                 tried_from_dot = true
                 retry
             end
-            puts e
+            puts e.backtrace
             exit 0
         end
 
