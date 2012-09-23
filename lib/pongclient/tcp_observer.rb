@@ -78,7 +78,7 @@ class TCPObserver
         end
         if message["data"]["conf"]["maxWidth"].class.ancestors.include? Numeric
             @pitch.their_wall = message["data"]["conf"]["maxWidth"]
-        else 
+        else
             flag = true
         end
         if message["data"]["conf"]["paddleHeight"].class.ancestors.include? Numeric

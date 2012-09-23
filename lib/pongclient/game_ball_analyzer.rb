@@ -62,7 +62,7 @@ class GameBallAnalyzer
                 x_start = sideline_coords.x
                 y_start = sideline_coords.y
                 dy *= -1.0
-                
+
                 # Not used when ! to_our_goal
                 sideline_hits += 1
                 comes_from_up = y_start < @pitch.get_center_y
@@ -70,7 +70,7 @@ class GameBallAnalyzer
             end
         end while sideline_coords != false
 
-    
+
         # If there's no sideline hits,
         # the current direction determines if it'll come from up
         if sideline_hits == 0
@@ -78,10 +78,10 @@ class GameBallAnalyzer
         else
             ball_will_come_from_up = comes_from_up
         end
-        
+
         hit_coords = calculate_goalline_pass(x_start, y_start, dx, dy, to_our_goal, print)
         $logger.debug "testi actual hit_coords #{hit_coords.x} #{hit_coords.y}"
-        
+
         return XYDCoordinates.new(hit_coords.x, hit_coords.y, ball_will_come_from_up)
     end
 
@@ -95,7 +95,7 @@ class GameBallAnalyzer
         end
 
         to_our_goal = true
-        
+
         # Recursive loop to get the last sideline hit before hitting our goalline
         begin
             $logger.debug "testi x= #{x_start} y= #{y_start}"
@@ -106,13 +106,13 @@ class GameBallAnalyzer
                 dy *= -1.0
             end
         end while sideline_coords != false
-        
+
         hit_coords = calculate_goalline_pass(x_start, y_start, dx, dy, to_our_goal, false)
-        
+
         $logger.debug "testi simulated hit_coords #{hit_coords.x} #{hit_coords.y}"
         return hit_coords
     end
-    
+
     # Public
     # Returns boolean if the ball is currently going towards our goal-line
     def is_going_towards_our_goalline
@@ -188,11 +188,11 @@ class GameBallAnalyzer
         # The distance to travel in y before hit
         y_distance = (y_hit - y_start).abs
         dx_dy = (dx/dy).abs
-        
+
         if ! to_our_goal
             dx_dy *= -1
         end
-        
+
         # x_hit is the extrapolated value after travelling the x_distance
         x_hit =  x_start - dx_dy * y_distance
 
@@ -218,7 +218,7 @@ class GameBallAnalyzer
         # The distance to travel in x before hit
         x_distance = ( x_hit - x_start ).abs
         dx_dy = (dx/dy).abs
-        
+
         # y_hit is the extrapolated value after travelling the x_distance
         if dy > 0
             y_hit = y_start + (1.0/dx_dy) * x_distance

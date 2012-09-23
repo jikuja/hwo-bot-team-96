@@ -26,7 +26,7 @@ class Pitch
     def get_half_of_paddle_height
         return paddle_height / 2.0
     end
-    
+
     def get_our_goalline
         return @our_wall + @paddle_width
     end
