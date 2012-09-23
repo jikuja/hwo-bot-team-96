@@ -4,13 +4,13 @@ class AI
 
     # How much (in amounts of ball radius) should the inner hitting point be
     # inside the paddle
-    INNER_SAFE_FACTOR = 0.1
+    INNER_SAFE_FACTOR = 0.01
 
     # How much (in amounts of ball radius) should the outer hitting point be
     # inside the paddle.
     # In correct physics, the inner and outer should be the same.
     # Treats the symptom, not the disease (because we don't know what it is).
-    OUTER_SAFE_FACTOR = 0.6
+    OUTER_SAFE_FACTOR = 0.01
 
     # How close (in amounts of ball radius) to the sideline we allow our paddle to go.
     # With laggy connections the paddle might collide and bounce off
@@ -37,9 +37,6 @@ class AI
 
         # The coordinates where the bot wants to aim its hit
         @where_to_aim_coordinates = XYCoordinates.new(600.0-10.0, 0.0)
-
-        # The amount of uncertainty to pass coordinates that one sideline hit will cause
-        @pixel_uncertainty_by_a_hit = 2.0 # +/- 2.0 pixels
 
         # How close (pixels) to the target coordinates we want to stop
         @target_distance_threshold = 0.5
@@ -151,7 +148,7 @@ class AI
             if @ball_will_come_from_up
                 # Ball comes from up
                 
-                if @ball_analyzer.get_dxdy > -1.0 && @our_paddle.get_y < @pitch.get_height * 0.4
+                if @ball_analyzer.get_dxdy.abs < 1.0 && @our_paddle.get_y < @pitch.get_height * 0.45
                     # If the ball comes  at a low angle and our paddle is too up,
                     # it's risky to aim at the bottom corner.
                     # The opponent will probably be able to reach the ball
@@ -162,6 +159,11 @@ class AI
                     
                     aim_x = @pitch.get_their_goalline
                     aim_y = @pitch.get_height * height_factor
+                elsif @ball_analyzer.get_dxdy.abs > 1.0
+                    height_factor = @our_paddle.get_y / @pitch.get_height + 0.1
+                    
+                    aim_x = @pitch.get_their_goalline
+                    aim_y = @pitch.get_height * height_factor                    
                 else                
                     # Aim bottom corner
                     @log_message += "\n\t" +  "aim bottom"
@@ -171,7 +173,7 @@ class AI
             else
                 # Ball comes from down
                 
-                if @ball_analyzer.get_dxdy < 1.0 && @our_paddle.get_y > @pitch.get_height * 0.4
+                if @ball_analyzer.get_dxdy.abs < 1.0 && @our_paddle.get_y > @pitch.get_height * 0.55
 
                     # If the ball comes and at a low angle and our paddle is too up,
                     # it's risky to aim at the top corner.
@@ -183,6 +185,12 @@ class AI
 
                     aim_x = @pitch.get_their_goalline
                     aim_y = @pitch.get_height * height_factor
+                elsif @ball_analyzer.get_dxdy.abs > 1.0
+                    height_factor = @our_paddle.get_y / @pitch.get_height - 0.1
+                    
+                    aim_x = @pitch.get_their_goalline
+                    aim_y = @pitch.get_height * height_factor                    
+
                 else
                     # Aim top corner
                     @log_message += "\n\t" +  "aim up"
