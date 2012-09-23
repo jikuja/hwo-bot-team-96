@@ -149,15 +149,36 @@ class AI
         if pass_coordinates_can_be_hit_with_both_sides_of_paddle
             # Shoots the ball into the corner that is easier to aim
             if @ball_will_come_from_up
-                # Aim bottom corner
-                @log_message += "\n\t" +  "aim bottom"
-                aim_x = @pitch.get_their_goalline
-                aim_y = @pitch.bottom_sideline - @aim_distance_from_sideline
+                
+                if @our_paddle.get_y < @pitch.get_height * (1.0/3.0)
+                    # If our paddle is too up, it's risky to aim at bottom corner
+                    # The opponent will probably be able to reach the ball
+                    # and aim at our bottom corner
+                    
+                    # Instead let's try to make the opponent to do the same mistake.
+                    aim_x = @pitch.get_their_goalline
+                    aim_y = @pitch.get_height * (1.0/3.0)
+                else                
+                    # Aim bottom corner
+                    @log_message += "\n\t" +  "aim bottom"
+                    aim_x = @pitch.get_their_goalline
+                    aim_y = @pitch.bottom_sideline - @aim_distance_from_sideline
+                end
             else
-                # Aim top corner
-                @log_message += "\n\t" +  "aim up"
-                aim_x = @pitch.get_their_goalline
-                aim_y = @pitch.top_sideline + @aim_distance_from_sideline
+                if @our_paddle.get_y > @pitch.get_height * (2.0/3.0)
+                    # If our paddle is too up, it's risky to aim at bottom corner
+                    # The opponent will probably be able to reach the ball
+                    # and aim at our bottom corner
+                    
+                    # Instead let's try to make the opponent to do the same mistake.
+                    aim_x = @pitch.get_their_goalline
+                    aim_y = @pitch.get_height * (2.0/3.0)
+                else
+                    # Aim top corner
+                    @log_message += "\n\t" +  "aim up"
+                    aim_x = @pitch.get_their_goalline
+                    aim_y = @pitch.top_sideline + @aim_distance_from_sideline
+                end
             end
         else
             # Can't hit it freely. Plan B: Let's cope or hit a sideline instead.
