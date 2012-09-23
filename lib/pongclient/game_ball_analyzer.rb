@@ -206,6 +206,8 @@ class GameBallAnalyzer
             return false
         elsif ! to_our_goal && x_hit > @pitch.get_their_goalline - @pitch.ball_radius
             return false
+        elsif x_hit.nan?
+            return false # Terrible to hack to fix a bug
         else
             $logger.debug "testi sideline #{to_our_goal} #{x_hit}"
             $logger.debug "Sideline hit at (#{x_hit}, #{y_hit})" if print
