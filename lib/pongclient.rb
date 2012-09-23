@@ -1,5 +1,6 @@
 require 'socket'
 require 'logger'
+require 'thread'
 
 require 'pongclient/game_ball_analyzer.rb'
 require 'pongclient/pitch.rb'
@@ -26,6 +27,9 @@ class PongClient
         $dumplogger.formatter = proc do |severity, datetime, progname, msg|
             (datetime.to_f*1000).to_s + " " + msg.to_s + "\n"
         end
+
+        #setup mutex
+        $mutex = Mutex.new
 
         #try to load supplied AI file
         # TODO: make better!

@@ -43,10 +43,14 @@ class TCPObserver
                 when 'gameStarted'
                     $logger.info "... game on! Paddling against #{message['data']}"
                 when 'gameIsOn'
-                    handle_gameIsOn_data message
+                    $mutex.synchronize do
+                        handle_gameIsOn_data message
+                    end
                 when 'gameIsOver'
                     #clear GameBallAnalyzer state as soon as possible
-                    @ball_analyzer.clear_coordinates
+                    $mutex.synchronize do
+                        @ball_analyzer.clear_coordinates
+                    end
                     @sma.clear_speed
                     $logger.info "Game over... #{message['data']} won!"
                 end
