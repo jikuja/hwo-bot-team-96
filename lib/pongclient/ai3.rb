@@ -49,7 +49,7 @@ class AI
         # it will bounce near the center and travel longer time.
         @aim_distance_from_sideline = 50.0
 
-        # If the paddle is moved based on a guess
+        # If the paddle is currently moved based on a guess
         @guess_mode = false
     end
 
@@ -97,7 +97,7 @@ class AI
                 set_target_coordinates_to_opponent_hit_zone
                 return
             else
-                # Normal defense mode.
+                # Normal defense mode. This should not happen very often.
                 @guess_mode = false # This is basically a guess, but still
                 set_target_coordinates_to_center
                 return
@@ -114,6 +114,7 @@ class AI
         # Target coordinates temporarily not available -- use previous data
         if pass_coordinates != false
             @pass_y = pass_coordinates.y
+            @ball_will_come_from_up = pass_coordinates.comes_from_up
 
             # What is the dx/dy-ratio we want to have after the ball has hit our paddle
             # (so it will reach the where_to_aim_coordinates)
@@ -143,7 +144,7 @@ class AI
 
         if pass_coordinates_can_be_hit_with_both_sides_of_paddle
             # Shoots the ball into the corner that is easier to aim
-            if @ball_analyzer.ball_will_come_from_up
+            if @ball_will_come_from_up
                 # Aim down
                 @log_message += "\n\t" +  "aim bottom"
                 aim_x = @pitch.get_their_goalline
@@ -156,7 +157,7 @@ class AI
             end
         else
             # Can't hit it freely. Plan B: Let's hit a sideline instead.
-            if @ball_analyzer.ball_will_come_from_up
+            if @ball_will_come_from_up
                 if @pass_y < @pitch.get_center_y
                     # The ball bounces just from the sideline before hitting
                     # our paddle. We can't really aim in these situations.
@@ -204,7 +205,11 @@ class AI
                         
         # Where the ball will most likely pass opponent goal-line
         their_goalline_pass_coordinates = @ball_analyzer.give_pass_coordinates(false)
-        puts "testi their pass #{their_goalline_pass_coordinates.y}"
+        
+        
+        # If the opponent has stopped, we can calculate where the ball will go after
+        # a hit to their paddle.
+        # If the opponent is moving, assume an offset 0 hit.
         
         if ! @their_paddle.is_moving
             # Where the opponent is located
@@ -214,9 +219,6 @@ class AI
         else
             opponent_offset = 0.0
         end
-        
-        
-        puts "testi offset #{opponent_offset}"
 
         if their_goalline_pass_coordinates.comes_from_up && opponent_offset > 0
             hit_with_inner = true
@@ -256,20 +258,16 @@ class AI
         pass_coordinates = @ball_analyzer.give_simulated_pass_coordinates(x_start, y_start, dx, dy, false)
     
         # Terrible fix to the problem
-        if pass_coordinates == false
-            return
+        if pass_coordinates != false
+            # set target coordinates to there
+            @target_y = pass_coordinates.y
+            @pass_y  = pass_coordinates.y
         end
-        
-        puts "testi our pass #{pass_coordinates.y}"
-        puts "testi ------------------------------"
-        
-        # set target coordinates to there
-        @target_y = pass_coordinates.y
-        @pass_y  = pass_coordinates.y
     end
 
     # Private
     # Reduces the amount of offset if the goalline pass coordinates have uncertainty
+    # TODO Not used at the moment. Remove or start using it.
     def adjust_offset_depending_on_uncertainty(paddle_offset)
         future_sideline_hits = @ball_analyzer.get_future_sideline_hits
 
@@ -292,37 +290,34 @@ class AI
     # Makes sure that the offset is not bigger than our limits.
     def limit_offset(paddle_offset)
 
-        # This function should be rendered unnecessary.
-        # Or it can be kept as an extra safety measure.
-
         # Let's not use the most outer pixels.
         # The amount depends on whether we are using the inner or outer side.
         max_inner_offset = @pitch.get_half_of_paddle_height - get_inner_safe_zone
         max_outer_offset = @pitch.get_half_of_paddle_height - get_outer_safe_zone
         @log_message += "\n\t" +  "max #{max_outer_offset} #{max_inner_offset}"
 
-        if ( @ball_analyzer.ball_will_come_from_up &&
+        if ( @ball_will_come_from_up &&
              paddle_offset < 0 &&
              paddle_offset.abs > max_outer_offset )
 
             # Comes from up, will be hit with outer side
             paddle_offset = (-1)*max_outer_offset
             
-        elsif (! @ball_analyzer.ball_will_come_from_up &&
+        elsif (! @ball_will_come_from_up &&
                  paddle_offset > 0 &&
                  paddle_offset > max_outer_offset )
 
             # Comes from down, will be hit with outer side             
             paddle_offset = max_outer_offset
 
-        elsif ( @ball_analyzer.ball_will_come_from_up &&
+        elsif ( @ball_will_come_from_up &&
                 paddle_offset > 0 &&
                 paddle_offset > max_inner_offset )
             
             # Comes from up, will be hit with inner side
             paddle_offset = max_inner_offset
         
-        elsif ( ! @ball_analyzer.ball_will_come_from_up &&
+        elsif ( ! @ball_will_come_from_up &&
                 paddle_offset < 0 &&
                 paddle_offset.abs > max_inner_offset )
         
@@ -333,7 +328,7 @@ class AI
             paddle_offset = paddle_offset
         end
 
-        @log_message += "\n\t" +  "limit_offset #{@ball_analyzer.ball_will_come_from_up} #{paddle_offset}"
+        @log_message += "\n\t" +  "limit_offset #{@ball_will_come_from_up} #{paddle_offset}"
         return paddle_offset
     end
 
@@ -346,6 +341,8 @@ class AI
         end
     end
     
+    # Used to control the speed when it's not crucial to reach accurately
+    # the target coordinates
     def get_sloppy_speed
         if paddle_is_in_risk_of_hitting_the_sideline
             # Stop the paddle before it hits the sideline
@@ -363,6 +360,8 @@ class AI
         end    
     end
     
+    # Aims to reach the target coordinates accurately. Adapts speed when near the
+    # target coordinates.
     def get_intelligent_speed
         if paddle_is_in_risk_of_hitting_the_sideline
             # Stop the paddle before it hits the sideline
@@ -376,7 +375,7 @@ class AI
             if paddle_is_above_target
                 return calculate_adapted_speed
             else
-                return calculate_adapted_speed*(-1)
+                return (-1)*calculate_adapted_speed
             end
         else
             if paddle_is_above_target
@@ -389,7 +388,7 @@ class AI
         end
     end
 
-    # To help preventing the paddle from hitting a sideline
+    # Helps preventing the paddle from hitting a sideline
     def paddle_is_in_risk_of_hitting_the_sideline
         return (  @our_paddle.get_y < sideline_safe_zone && @sma.speed < 0 ) ||
                ( (@our_paddle.get_y > @pitch.bottom_sideline + sideline_safe_zone ) &&
@@ -443,7 +442,7 @@ class AI
         else
             # TODO what to do when this happens?
             # This tries to hit the ball to the direction where it comes from.
-            # It is very, very, very difficult or impossible
+            # It is very, very, very difficult.
             
             @log_message += "\n\t" +  "error - unrealistic bouncing asked"
             return 7.0 # Just try as hard as you can
@@ -463,13 +462,13 @@ class AI
             # This should not happen.
             # We can't do a hit like what was asked. Just hit it.
             @log_message += "\n\t" +  "error - asked to bounce the ball back"
-            return 7.0
+            return 3.0
         end
     end
 
     # Private
-    # Does the magic. Calculates what distance/offset from paddle's
-    # center gives the wanted change in dxdy. Uses absolute values.
+    # Does the magic. Calculates what offset from paddle's
+    # center gives us the wanted change in dxdy. Uses absolute values.
     def calculate_offset(needed_change_of_dxdy, current_dxdy, hit_with_inner)
         current_dxdy = current_dxdy.abs
         
@@ -491,8 +490,6 @@ class AI
     # Does the magic.
     # Reverse version of the function calculate_offset
     def calculate_change_in_dxdy(offset, current_dxdy, hit_with_inner)
-
-        hit_with_inner = true
         
         if hit_with_inner
             a = 0.02
@@ -531,8 +528,8 @@ class AI
         # the inner or the outer side of the paddle.
         # This is due to the flow effect.
 
-        if (  @ball_analyzer.ball_will_come_from_up &&   paddle_is_above_pass) ||
-           (! @ball_analyzer.ball_will_come_from_up && ! paddle_is_above_pass)
+        if (  @ball_will_come_from_up &&   paddle_is_above_pass) ||
+           (! @ball_will_come_from_up && ! paddle_is_above_pass)
 
             # Ball will hit the outer side of the paddle.
             # Take into account the flow effect

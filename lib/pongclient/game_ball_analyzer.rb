@@ -9,23 +9,10 @@ class GameBallAnalyzer
         # Contains the current ball coordinates
         # Cleared after hits to sidelines, goallines or paddles
         @coordinates = Array.new
-        
-        # From the ball's current location, how many times it will hit a sideline
-        # before reaching our goal-line
-        @future_sideline_hits = 0
-
-        # When we know it, it will be a boolean.
-        # Up is defined as human up, where y=0
-        @ball_will_come_from_up = false
     end
 
     def clear_coordinates
         @coordinates.clear
-        @ball_will_come_from_up = false
-    end
-
-    def ball_will_come_from_up
-        return @ball_will_come_from_up
     end
 
     # Public
@@ -39,7 +26,8 @@ class GameBallAnalyzer
     # Public
     # to_our_goal is boolean if we want to calculate pass coordinates to our goal-line
     # or their goal-line
-    # TODO Refactor: bad design, not single-responsibility, has side-effects
+    # TODO Refactor
+    # Remove needless code repetition (give_simulated_pass_coordinates)
     # Code quality awful, but probably not time to redesign it.
     def give_pass_coordinates(to_our_goal, print=false)
         if ! is_enough_data
@@ -67,7 +55,7 @@ class GameBallAnalyzer
         dy = get_dy
         sideline_hits = 0
 
-        # Recursive loop to get the last sideline hit before hitting our goalline
+        # Recursive loop to get the last sideline hit before hitting our goal-line
         begin
             sideline_coords = calculate_sideline_hit(x_start, y_start, dx, dy, to_our_goal, print)
             if sideline_coords != false
@@ -82,29 +70,19 @@ class GameBallAnalyzer
             end
         end while sideline_coords != false
 
-        temp_future_sideline_hits = sideline_hits
     
         # If there's no sideline hits,
         # the current direction determines if it'll come from up
         if sideline_hits == 0
-            temp_ball_will_come_from_up = get_dy > 0
+            ball_will_come_from_up = get_dy > 0
         else
-            temp_ball_will_come_from_up = comes_from_up
-        end
-
-        if to_our_goal
-            @future_sideline_line = temp_future_sideline_hits
-            @ball_will_come_from_up = temp_ball_will_come_from_up
+            ball_will_come_from_up = comes_from_up
         end
         
         hit_coords = calculate_goalline_pass(x_start, y_start, dx, dy, to_our_goal, print)
         puts "testi actual hit_coords #{hit_coords.x} #{hit_coords.y}"
         
-        if ! to_our_goal
-            return XYDCoordinates.new(hit_coords.x, hit_coords.y, temp_ball_will_come_from_up)
-        end
-        
-        return hit_coords
+        return XYDCoordinates.new(hit_coords.x, hit_coords.y, ball_will_come_from_up)
     end
 
     # Public
@@ -134,13 +112,6 @@ class GameBallAnalyzer
         puts "testi simulated hit_coords #{hit_coords.x} #{hit_coords.y}"
         return hit_coords
     end
-
-
-    # Public
-    # From the ball's current location, how many times it will hit a sideline before
-    def get_future_sideline_hits
-        return @future_sideline_hits
-    end
     
     # Public
     # Returns boolean if the ball is currently going towards our goal-line
@@ -166,24 +137,24 @@ class GameBallAnalyzer
         return @coordinates.length >= 2
     end
 
-    # Public?
+    # Public
     def get_dxdy
         return get_dx/get_dy
     end
 
-    # Public?
+    # Public
     # Returns the ball's latest x-coordinate
     def get_x
         return @coordinates[-1].x
     end
 
-    # Public?
+    # Public
     # Returns the ball's latest y-coordinate
     def get_y
         return @coordinates[-1].y
     end
 
-    # Public?
+    # Public
     def get_dx
         # x1 is before x2 in time
         x_1 = @coordinates[0].x
@@ -191,14 +162,14 @@ class GameBallAnalyzer
         return x_2-x_1
     end
 
-    # Public?
+    # Public
     def get_dy
         y_1 = @coordinates[0].y
         y_2 = @coordinates[-1].y
         return y_2-y_1
     end
 
-    # Public?
+    # Public
     def get_dt
         t_1 = @coordinates[0].t
         t_2 = @coordinates[-1].t
@@ -236,6 +207,7 @@ class GameBallAnalyzer
         end
     end
 
+    # Gives the coordinates where the ball will probably pass our goal-line
     def calculate_goalline_pass(x_start, y_start, dx, dy, to_our_goal, print)
         if to_our_goal
             x_hit = @pitch.get_our_goalline
@@ -247,10 +219,6 @@ class GameBallAnalyzer
         x_distance = ( x_hit - x_start ).abs
         dx_dy = (dx/dy).abs
         
-        if ! to_our_goal
-            #dx_dy *= -1
-        end
-
         # y_hit is the extrapolated value after travelling the x_distance
         if dy > 0
             y_hit = y_start + (1.0/dx_dy) * x_distance
