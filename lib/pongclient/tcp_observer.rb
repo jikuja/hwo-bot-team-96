@@ -50,8 +50,10 @@ class TCPObserver
                     #clear GameBallAnalyzer state as soon as possible
                     $mutex.synchronize do
                         @ball_analyzer.clear_coordinates
+                        @their_paddle_analyzer.clear_coordinates
+                        @our_paddle_analyzer.clear_coordinates
+                        @sma.clear_speed
                     end
-                    @sma.clear_speed
                     $logger.info "Game over... #{message['data']} won!"
                 end
         end
