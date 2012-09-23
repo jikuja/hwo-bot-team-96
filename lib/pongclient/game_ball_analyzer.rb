@@ -176,6 +176,12 @@ class GameBallAnalyzer
         return t_2-t_1
     end
 
+    # Return boolean whether the ball is on the opponent side of the pitch or not
+    def is_on_opponent_side
+        return get_x > @pitch.get_width / 2.0
+    end
+
+
     private # --------------------------------------------------------------------
 
     def calculate_sideline_hit(x_start, y_start, dx, dy, to_our_goal, print)

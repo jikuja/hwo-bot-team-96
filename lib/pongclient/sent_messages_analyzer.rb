@@ -22,7 +22,7 @@ class SentMessagesAnalyzer
         if @sent_messages.length > 42
             remove_oldest_message
         end
-        $logger.debug "ai.run: speed: #{speed} sma count: #{count_messages(2)}"
+        $logger.debug "ai.run: speed: #{speed} sma count: #{count_messages(1)}"
     end
 
     def remove_oldest_message

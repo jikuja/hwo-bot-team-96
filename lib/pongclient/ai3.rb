@@ -67,7 +67,7 @@ class AI
                     update_target_coordinates
                     speed = get_target_speed
 
-                    if (! @sma.is_same_speed(speed) ) && ( @sma.count_messages(2) < 19 )
+                    if (! @sma.is_same_speed(speed) ) && ( @sma.count_messages(1) < 10 )
                         @sma.log_message(speed)
                         @tcp.puts movement_message(speed) + "\n"
                         $dumplogger.info(movement_message(speed))
@@ -100,14 +100,18 @@ class AI
                 return
             else
                 # Normal defense mode. This should not happen very often.
-                @guess_mode = false # This is basically a guess, but still
+                @guess_mode = true
                 set_target_coordinates_to_center
                 return
             end
         end
 
         @guess_mode = false
-        update_where_to_aim_coordinates
+        
+        # Return boolean whether the ball is on the opponent side of the pitch or not
+        if @ball_analyzer.is_on_opponent_side
+            update_where_to_aim_coordinates
+        end
 
         # Temp is used, because pass coordinates might return false
         # if there is not enough data after a sideline hit
@@ -142,8 +146,6 @@ class AI
 
         # DO NOT try to bounce the ball back to the direction where it comes from
 
-        # TODO if ball_y close to edges and get_dy.abs is small, we could shoot the ball back
-
         if pass_coordinates_can_be_hit_with_both_sides_of_paddle
             # Shoots the ball into the corner that is easier to aim
             if @ball_will_come_from_up
@@ -158,74 +160,55 @@ class AI
                 aim_y = @pitch.top_sideline + @aim_distance_from_sideline
             end
         else
-            # Can't hit it freely. Plan B: Let's cope or hit a sideline instead
+            # Can't hit it freely. Plan B: Let's cope or hit a sideline instead.
+            # The aiming is really difficult, these won't probably change anything.
 
-            if @ball_will_come_from_up
-                if @pass_y < @pitch.get_center_y
-                    # Ball bounces from up, but hits our goal-line near the top
-                    # The ball bounces just from the sideline before hitting
-                    # our paddle. We can't really aim in these situations.
-
-                    if @their_paddle.get_y > @pitch.get_height * (3.0/4.0)
-                        # Opponent paddle is up, try to keep the
-                        # ball as low as possible
-                        @log_message += "\n\t" +  "aim from top 1"
-                        aim_x = @pitch.get_their_goalline
-                        aim_y = @pitch.top_sideline + @aim_distance_from_sideline
-                    elsif @their_paddle.get_y < @pitch.get_height * (1.0/4.0)
-                        # Opponent paddle is low, aim high by
-                        # bouncing the ball to the sideline
-                        @log_message += "\n\t" +  "aim from top 2"
-                        aim_x = 150.0
-                        aim_y = @pitch.top_sideline
-                    else
-                        # Opponent is close to the edges, aim to the center
-                        # by bouncing it near the pitch center line
-                        @log_message += "\n\t" +  "aim from top 3"
-                        aim_x = @pitch.get_their_goalline / 2.0
-                        aim_y = @pitch.get_center_y
-                    end
+            if @pass_y < @pitch.get_center_y
+                # We hit the ball near top
+                
+                if @their_paddle.get_y > @pitch.get_height * (2.0/3.0)
+                    # Opponent paddle is down, try to keep the
+                    # ball as high as possible
+                    @log_message += "\n\t" +  "aim from top 1 0"
+                    aim_x = @pitch.get_their_goalline
+                    aim_y = @pitch.top_sideline + @aim_distance_from_sideline
+                elsif @their_paddle.get_y < @pitch.get_height * (1.0/3.0)
+                    # Opponent paddle is up, aim low by
+                    # bouncing the ball to the top sideline
+                    @log_message += "\n\t" +  "aim from top 2"
+                    aim_x = 150.0
+                    aim_y = @pitch.top_sideline
                 else
-                    # Hit the ball to the sideline
-                    # TODO -- calculate the sideline coordinates
-                    
-                    if @their_paddle.get_y < @pitch.get_height * (1.0/4.0)
-                        # Opponent paddle is up, try to keep the
-                        # ball as low as possible
-                        @log_message += "\n\t" +  "aim from top 1"
-                        aim_x = @pitch.get_their_goalline
-                        aim_y = @pitch.bottom_sideline - @aim_distance_from_sideline
-                    elsif @their_paddle.get_y > @pitch.get_height * (3.0/4.0)
-                        # Opponent paddle is low, aim high by
-                        # bouncing the ball to the sideline
-                        @log_message += "\n\t" +  "aim from top 2"                        
-                        aim_x = 150.0
-                        aim_y = @pitch.bottom_sideline                   
-                    else
-                        # Opponent is close to the edges, aim to the center
-                        # by bouncing it from the pitch center
-                        @log_message += "\n\t" +  "aim from top 3"                        
-                        aim_x = @pitch.get_their_goalline / 2.0
-                        aim_y = @pitch.get_center_y
-                    end
+                    # Opponent is close to the edges, aim to the center
+                    # by bouncing it near the pitch center line
+                    @log_message += "\n\t" +  "aim from top 3"
+                    aim_x = @pitch.get_their_goalline / 2.0
+                    aim_y = @pitch.get_center_y
                 end
             else
-                if @pass_y > @pitch.get_center_y
-                    # The ball bounces just from the sideline before hitting
-                    # our paddle. We can't really aim in these situations.
-                    @log_message += "\n\t" +  "aim center from bottom"
+                # We hit the ball near bottom
+
+                if @their_paddle.get_y > @pitch.get_height * (2.0/3.0)
+                    # Opponent paddle is down, try to keep the
+                    # ball as high as possible
+                    @log_message += "\n\t" +  "aim from top 1 0"
                     aim_x = @pitch.get_their_goalline
-                    aim_y = @pitch.get_center_y
-                else
-                    # TODO -- calculate the sideline coordinates
-                    # Hit the ball to the sideline
-                    @log_message += "\n\t" +  "aim top sideline from bottom"
-                    aim_x = 200.0
+                    aim_y = @pitch.top_sideline + @aim_distance_from_sideline
+                elsif @their_paddle.get_y < @pitch.get_height * (1.0/3.0)
+                    # Opponent paddle is up, aim low by
+                    # bouncing the ball to the top sideline
+                    @log_message += "\n\t" +  "aim from top 2"
+                    aim_x = 150.0
                     aim_y = @pitch.top_sideline
+                else
+                    # Opponent is close to the edges, aim to the center
+                    # by bouncing it near the pitch center line
+                    @log_message += "\n\t" +  "aim from top 3"
+                    aim_x = @pitch.get_their_goalline / 2.0
+                    aim_y = @pitch.get_center_y
                 end
 
             end
-
         end
 
         @where_to_aim_coordinates = XYCoordinates.new( aim_x, aim_y )
@@ -371,7 +354,7 @@ class AI
 
     # Gives the speed that we wish our paddle will go
     def get_target_speed
-        if @guess_mode
+        if @guess_mode || @sma.count_messages(1) > 7
             return get_sloppy_speed
         else
             return get_intelligent_speed
