@@ -55,6 +55,8 @@ class TCPObserver
                         @sma.clear_speed
                     end
                     $logger.info "Game over... #{message['data']} won!"
+                else
+                    $logger.warn "Unknown message: #{message}"
                 end
         end
     end
