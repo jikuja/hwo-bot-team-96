@@ -64,7 +64,7 @@ class AI
                     update_target_coordinates
                     speed = get_target_speed
 
-                    if (! @sma.is_same_speed(speed) ) && ( @sma.count_messages(1) < 10 )
+                    if (! @sma.is_same_speed(speed) ) && ( @sma.count_messages(2) < 20 )
                         @sma.log_message(speed)
                         @tcp.puts movement_message(speed) + "\n"
                         $dumplogger.info(movement_message(speed))
@@ -148,19 +148,19 @@ class AI
             if @ball_will_come_from_up
                 # Ball comes from up
                 
-                if @ball_analyzer.get_dxdy.abs > 2.0 && @our_paddle.get_y < @pitch.get_height * 0.35 && @ball_analyzer.number_of_hits < 20
+                if @ball_analyzer.get_dxdy.abs > 1.9 && @our_paddle.get_y < @pitch.get_height * 0.35 && @ball_analyzer.number_of_hits < 20
                     # If the ball comes  at a low angle and our paddle is too up,
                     # it's risky to aim at the bottom corner.
                     # The opponent will probably be able to reach the ball
                     # and aim at our bottom corner.
                     
                     # Instead, let's try to make the opponent to do the same mistake.
-                    height_factor = @our_paddle.get_y / @pitch.get_height + 0.01
+                    height_factor = @our_paddle.get_y / @pitch.get_height - 0.01
                     
                     aim_x = @pitch.get_their_goalline
                     aim_y = @pitch.get_height * height_factor
-                elsif @ball_analyzer.get_dxdy.abs > 2.2 && @ball_analyzer.number_of_hits < 18
-                    height_factor = @our_paddle.get_y / @pitch.get_height + 0.01
+                elsif @ball_analyzer.get_dxdy.abs > 2.0 && @ball_analyzer.number_of_hits < 18
+                    height_factor = @our_paddle.get_y / @pitch.get_height - 0.01
                     
                     aim_x = @pitch.get_their_goalline
                     aim_y = @pitch.get_height * height_factor                    
@@ -173,7 +173,7 @@ class AI
             else
                 # Ball comes from down
                 
-                if @ball_analyzer.get_dxdy.abs > 2.0 && @our_paddle.get_y > @pitch.get_height * 0.65 && @ball_analyzer.number_of_hits < 20
+                if @ball_analyzer.get_dxdy.abs > 1.9 && @our_paddle.get_y > @pitch.get_height * 0.65 && @ball_analyzer.number_of_hits < 20
 
                     # If the ball comes and at a low angle and our paddle is too up,
                     # it's risky to aim at the top corner.
@@ -181,12 +181,12 @@ class AI
                     # and aim at our top corner.
                     
                     # Instead, let's try to make the opponent to do the same mistake.
-                    height_factor = @our_paddle.get_y / @pitch.get_height - 0.01
+                    height_factor = @our_paddle.get_y / @pitch.get_height + 0.01
 
                     aim_x = @pitch.get_their_goalline
                     aim_y = @pitch.get_height * height_factor
-                elsif @ball_analyzer.get_dxdy.abs > 2.2 && @ball_analyzer.number_of_hits < 18
-                    height_factor = @our_paddle.get_y / @pitch.get_height - 0.01
+                elsif @ball_analyzer.get_dxdy.abs > 2.0 && @ball_analyzer.number_of_hits < 18
+                    height_factor = @our_paddle.get_y / @pitch.get_height + 0.01
                     
                     aim_x = @pitch.get_their_goalline
                     aim_y = @pitch.get_height * height_factor                    
