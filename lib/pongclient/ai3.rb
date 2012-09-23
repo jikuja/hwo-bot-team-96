@@ -262,8 +262,8 @@ class AI
         bounced_dxdy = bounced_dxdy.abs
         
         # Terrible to hack to the fix the bug
-        if ! (bounced_dxdy < 200 && bounced_dxdy > -200)
-            bounced_dxdy = 0.0
+        if ! (bounced_dxdy < 500 && bounced_dxdy > -500)
+            bounced_dxdy = 10.0
         end 
 
         $logger.debug "testi bounced #{bounced_dxdy}"
