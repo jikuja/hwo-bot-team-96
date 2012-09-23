@@ -155,12 +155,12 @@ class AI
                     # and aim at our bottom corner.
                     
                     # Instead, let's try to make the opponent to do the same mistake.
-                    height_factor = @our_paddle.get_y / @pitch.get_height + 0.05
+                    height_factor = @our_paddle.get_y / @pitch.get_height + 0.01
                     
                     aim_x = @pitch.get_their_goalline
                     aim_y = @pitch.get_height * height_factor
-                elsif @ball_analyzer.get_dxdy.abs > 2.5 && @ball_analyzer.number_of_hits < 18
-                    height_factor = @our_paddle.get_y / @pitch.get_height + 0.05
+                elsif @ball_analyzer.get_dxdy.abs > 2.2 && @ball_analyzer.number_of_hits < 18
+                    height_factor = @our_paddle.get_y / @pitch.get_height + 0.01
                     
                     aim_x = @pitch.get_their_goalline
                     aim_y = @pitch.get_height * height_factor                    
@@ -181,12 +181,12 @@ class AI
                     # and aim at our top corner.
                     
                     # Instead, let's try to make the opponent to do the same mistake.
-                    height_factor = @our_paddle.get_y / @pitch.get_height - 0.05
+                    height_factor = @our_paddle.get_y / @pitch.get_height - 0.01
 
                     aim_x = @pitch.get_their_goalline
                     aim_y = @pitch.get_height * height_factor
-                elsif @ball_analyzer.get_dxdy.abs > 2.5 && @ball_analyzer.number_of_hits < 18
-                    height_factor = @our_paddle.get_y / @pitch.get_height - 0.05
+                elsif @ball_analyzer.get_dxdy.abs > 2.2 && @ball_analyzer.number_of_hits < 18
+                    height_factor = @our_paddle.get_y / @pitch.get_height - 0.01
                     
                     aim_x = @pitch.get_their_goalline
                     aim_y = @pitch.get_height * height_factor                    
