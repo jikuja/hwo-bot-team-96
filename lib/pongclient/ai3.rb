@@ -10,7 +10,7 @@ class AI
     # inside the paddle.
     # In correct physics, the inner and outer should be the same.
     # Treats the symptom, not the disease (because we don't know what it is).
-    OUTER_SAFE_FACTOR = 1.1
+    OUTER_SAFE_FACTOR = 0.6
 
     # How close (in amounts of ball radius) to the sideline we allow our paddle to go.
     # With laggy connections the paddle might collide and bounce off
@@ -151,15 +151,17 @@ class AI
             if @ball_will_come_from_up
                 # Ball comes from up
                 
-                if @ball_analyzer.get_dxdy > -0.7 && @our_paddle.get_y < @pitch.get_height * (1.0/3.0)
-                    # If the ball comes and at a low angle and our paddle is too up,
+                if @ball_analyzer.get_dxdy > -1.0 && @our_paddle.get_y < @pitch.get_height * 0.4
+                    # If the ball comes  at a low angle and our paddle is too up,
                     # it's risky to aim at the bottom corner.
                     # The opponent will probably be able to reach the ball
                     # and aim at our bottom corner.
                     
                     # Instead, let's try to make the opponent to do the same mistake.
+                    height_factor = @our_paddle.get_y / @pitch.get_height + 0.1
+                    
                     aim_x = @pitch.get_their_goalline
-                    aim_y = @pitch.get_height * (1.0/3.0)
+                    aim_y = @pitch.get_height * height_factor
                 else                
                     # Aim bottom corner
                     @log_message += "\n\t" +  "aim bottom"
@@ -169,7 +171,7 @@ class AI
             else
                 # Ball comes from down
                 
-                if @ball_analyzer.get_dxdy < 0.7 && @our_paddle.get_y > @pitch.get_height * (2.0/3.0)
+                if @ball_analyzer.get_dxdy < 1.0 && @our_paddle.get_y > @pitch.get_height * 0.4
 
                     # If the ball comes and at a low angle and our paddle is too up,
                     # it's risky to aim at the top corner.
@@ -177,8 +179,10 @@ class AI
                     # and aim at our top corner.
                     
                     # Instead, let's try to make the opponent to do the same mistake.
+                    height_factor = @our_paddle.get_y / @pitch.get_height - 0.1
+
                     aim_x = @pitch.get_their_goalline
-                    aim_y = @pitch.get_height * (2.0/3.0)
+                    aim_y = @pitch.get_height * height_factor
                 else
                     # Aim top corner
                     @log_message += "\n\t" +  "aim up"
